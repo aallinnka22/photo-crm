@@ -12,7 +12,12 @@ const chatRoutes = require("./routes/chatRoutes");
 const app = express();
 
 // ===== MIDDLEWARE =====
-app.use(cors());
+app.use(
+  cors({
+    origin: process.env.FRONTEND_URL ? [process.env.FRONTEND_URL] : true,
+    credentials: true,
+  })
+);
 app.use(express.json({ limit: "10mb" }));
 
 // ===== DB =====
@@ -33,15 +38,28 @@ app.use("/api/galleries", galleryRoutes);
 app.use("/api/admin", adminRoutes);
 app.use("/api/chat", chatRoutes);
 
-// ===== STATIC (опціонально) =====
+// ===== STATIC (тільки якщо реально існує папка site) =====
+// На Render ми фронт НЕ віддаємо (він буде на Vercel)
 const STATIC_DIR = path.join(__dirname, "..", "site");
-app.use(express.static(STATIC_DIR));
-app.get(/^\/(?!api).*/, (req, res) => {
-  res.sendFile(path.join(STATIC_DIR, "index.html"));
-});
+try {
+  // якщо index.html існує — тоді віддаємо статичку
+  const indexPath = path.join(STATIC_DIR, "index.html");
+  const fs = require("fs");
+  if (fs.existsSync(indexPath)) {
+    app.use(express.static(STATIC_DIR));
+    app.get(/^\/(?!api).*/, (req, res) => {
+      res.sendFile(indexPath);
+    });
+    console.log("🟦 Static site enabled:", STATIC_DIR);
+  } else {
+    console.log("🟨 Static site disabled (no site/index.html)");
+  }
+} catch (e) {
+  console.log("🟨 Static site disabled");
+}
 
 // ===== START =====
 const PORT = process.env.PORT || 5001;
-app.listen(PORT, () => {
-  console.log(`🚀 Server running on http://localhost:${PORT}`);
+app.listen(PORT, "0.0.0.0", () => {
+  console.log(`🚀 Server running on port ${PORT}`);
 });
