@@ -1,0 +1,479 @@
+/* ====== Theme & base ====== */
+:root{
+  --bg:#0a0a0d; --bg-2:#101015; --fg:#f2f3f5; --muted:#b2b7c3;
+  --accent:#888; --accent-2:#666; --card:#0d0d12; --border:rgba(255,255,255,.16);
+  --ring:rgba(143,176,255,.55); --radius:22px; --shadow:0 14px 44px rgba(0,0,0,.55);
+  --noise:url('data:image/svg+xml;utf8,<svg xmlns=%22http://www.w3.org/2000/svg%22 width=%22120%22 height=%22120%22 viewBox=%220 0 120 120%22><filter id=%22n%22><feTurbulence type=%22fractalNoise%22 baseFrequency=%220.9%22 numOctaves=%222%22 stitchTiles=%22stitch%22/></filter><rect width=%22120%22 height=%22120%22 filter=%22url(%23n)%22 opacity=%22.06%22/></svg>');
+}
+*{box-sizing:border-box}
+html,body{height:100%}
+body{
+  margin:0; font-family:'Inter','Manrope',system-ui,-apple-system,'Segoe UI',Roboto,Arial,sans-serif;
+  color:var(--fg);
+  background: radial-gradient(1200px 800px at 20% -10%, rgba(137,180,255,.08), transparent 60%),
+             radial-gradient(1000px 600px at 110% 10%, rgba(192,168,255,.07), transparent 60%),
+             linear-gradient(180deg, #0a0a0d 0%, #0b0b0f 40%, #0d0d14 100%);
+  background-attachment: fixed; overflow-x:hidden;
+}
+.waves{ position: fixed; inset: -10vh -10vw auto -10vw; height: 70vh; z-index:-1; opacity:.28; filter: blur(42px) saturate(110%);
+  background: radial-gradient(650px 300px at 20% 40%, rgba(180,180,190,.22), rgba(0,0,0,0) 60%), radial-gradient(550px 260px at 80% 10%, rgba(120,120,130,.18), rgba(0,0,0,0) 60%), radial-gradient(420px 200px at 60% 80%, rgba(80,80,90,.14), rgba(0,0,0,0) 60%); animation: float 24s ease-in-out infinite; }
+@keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(30px)}}
+.noise{ position:fixed; inset:0; pointer-events:none; background-image:var(--noise); z-index:0;}
+
+.container{ width:min(1120px,92vw); margin:0 auto; position:relative; z-index:1;}
+header{ position:sticky; top:0; backdrop-filter:saturate(140%) blur(10px); background:rgba(10,10,14,.55); border-bottom:1px solid var(--border); z-index:10 }
+.nav{ display:flex; align-items:center; justify-content:space-between; padding:14px 0 }
+.brand{ display:flex; align-items:center; gap:12px; text-decoration:none; color:var(--fg)}
+.logo{ width:36px; height:36px; border-radius:14px; border:1px solid var(--border); background: linear-gradient(180deg, rgba(255,255,255,.06), rgba(255,255,255,.02)); box-shadow: 0 1px 0 rgba(255,255,255,.04) inset, 0 8px 20px rgba(0,0,0,.35); position:relative; }
+.logo::after{ content:""; position:absolute; inset:6px; border-radius:8px; border:1px solid rgba(255,255,255,.18); background: radial-gradient(90px 60px at 60% 30%, rgba(255,255,255,.08), rgba(0,0,0,0)), linear-gradient(180deg, rgba(255,255,255,.02), rgba(0,0,0,.12)); }
+.logo::before{ content:""; position:absolute; left:9px; top:10px; width:18px; height:14px; border:1.6px solid rgba(255,255,255,.7); border-radius:4px; box-shadow: inset 0 0 0 2px rgba(0,0,0,.25); }
+.brand h1{ font-size:18px; letter-spacing:.6px; margin:0; font-weight:700 }
+nav a{ color:var(--muted); text-decoration:none; margin:0 10px; font-size:14px; position:relative }
+nav a::after{ content:""; position:absolute; left:0; bottom:-6px; width:0; height:1.5px; background:linear-gradient(90deg,var(--accent),var(--accent-2)); transition:width .25s ease }
+nav a:hover{ color:var(--fg)} nav a:hover::after{ width:100% }
+
+.btn{ padding:10px 14px; border:1px solid var(--border); border-radius:12px; background:#0f0f15; color:var(--fg); text-decoration:none; font-weight:600; letter-spacing:.3px; box-shadow:var(--shadow); transition: all .2s ease; display:inline-flex; align-items:center; gap:8px }
+.btn:hover{ transform:translateY(-1px) scale(1.03); box-shadow:0 10px 26px rgba(137,180,255,.18); border-color:var(--ring) }
+.btn.wide{ width:100% }
+
+/* Hero */
+.hero{ padding:72px 0 32px; display:grid; grid-template-columns:1.2fr .8fr; gap:28px; align-items:center }
+.title{ font-size: clamp(28px, 4.8vw, 48px); line-height:1.1; margin:12px 0 12px; font-weight:800 }
+.lead{ color:var(--muted); font-size: clamp(15px, 2.2vw, 18px); max-width:56ch }
+.cta-row{ display:flex; gap:10px; margin-top:16px }
+.how-it-works{ margin-top:14px }
+
+/* === circle container; image is child <img> === */
+.hero-photo{
+  position: relative;
+  width:360px;
+  height:360px;
+  border-radius:50%;
+  overflow:hidden;
+  border:1px solid var(--border);
+  box-shadow:0 10px 30px rgba(0,0,0,0.45);
+  justify-self:end;
+  margin-left:40px;
+  background: linear-gradient(180deg, rgba(255,255,255,.04), rgba(255,255,255,.02));
+}
+/* make the image fill the circle */
+.hero-photo img{
+  display:block;
+  width:100%;
+  height:100%;
+  object-fit:cover;
+}
+
+@media (max-width:900px){
+  .hero{ grid-template-columns:1fr }
+  .hero-photo{ margin-left:0; justify-self:center; width:260px; height:260px }
+}
+
+/* Sections */
+section{ padding:56px 0 }
+.section-title{ font-size: clamp(24px,4vw,34px); margin:0 0 18px }
+.grid{ display:grid; gap:16px }
+.grid.cols-3{ grid-template-columns: repeat(3, 1fr) }
+.grid.cols-2{ grid-template-columns: repeat(2, 1fr) }
+@media (max-width:900px){ .grid.cols-3,.grid.cols-2{ grid-template-columns:1fr } }
+.card{ border:1px solid var(--border); border-radius:var(--radius); padding:18px; background:linear-gradient(180deg, rgba(255,255,255,.03), rgba(255,255,255,.015)); transition: transform .2s ease, box-shadow .2s ease, border-color .2s ease }
+.card:hover{ transform:translateY(-3px) scale(1.02); border-color:var(--ring); box-shadow: 0 16px 40px rgba(137,180,255,.10) }
+.muted{ color:var(--muted) }
+.chip{ display:inline-block; padding:6px 10px; border:1px solid var(--border); border-radius:999px; font-size:12px; color:var(--muted); margin:4px 6px 0 0 }
+.chips{ margin-top:10px }
+
+/* Portfolio */
+.tabs{ display:flex; gap:8px; flex-wrap:wrap; margin-bottom:10px }
+.tab{ padding:8px 12px; border:1px solid var(--border); border-radius:999px; background:#0f0f15; color:var(--muted); cursor:pointer; font-size:13px }
+.tab.active{ color:var(--fg); border-color:var(--ring); box-shadow:0 0 0 3px rgba(137,180,255,.08) }
+.folio{ display:grid; grid-template-columns: repeat(3, 1fr); gap:12px }
+.folio .ph{ position:relative; overflow:hidden; border-radius:12px; border:1px solid var(--border); aspect-ratio:3/4; background:#111 }
+.folio img{ width:100%; height:100%; object-fit:cover; transition: transform .4s ease }
+.folio .ph:hover img{ transform: scale(1.06) }
+
+/* Services */
+.price{ display:flex; align-items:baseline; gap:8px; margin:6px 0 2px }
+.price .num{ font-size:28px; font-weight:800 }
+.price .u{ color:var(--muted); font-size:14px }
+
+/* Booking */
+.booking{ display:grid; grid-template-columns: 1.1fr .9fr; gap:16px }
+.calendar{ --cell:42px; border:1px solid var(--border); border-radius:var(--radius); overflow:hidden }
+.cal-head{ display:flex; align-items:center; justify-content:space-between; padding:10px 12px; background:var(--card); border-bottom:1px solid var(--border); color:var(--fg) }
+.cal-grid{ display:grid; grid-template-columns: repeat(7, 1fr) }
+.cal-grid div{ height:var(--cell); display:grid; place-items:center; border-right:1px solid rgba(255,255,255,.04); border-bottom:1px solid rgba(255,255,255,.04); font-size:13px; color:var(--muted) }
+.cal-grid button{ all:unset; width:100%; height:var(--cell); display:grid; place-items:center; cursor:pointer; border-right:1px solid rgba(255,255,255,.04); border-bottom:1px solid rgba(255,255,255,.04); font-size:13px; color:var(--fg) }
+.cal-grid button.sel{ background: linear-gradient(180deg, rgba(137,180,255,.14), rgba(137,180,255,.06)); box-shadow: inset 0 0 0 1px var(--ring) }
+.slots{ border:1px solid var(--border); border-radius:var(--radius); padding:12px }
+.slot{ display:inline-flex; align-items:center; justify-content:center; padding:8px 10px; margin:6px 6px 0 0; border:1px solid var(--border); border-radius:10px; cursor:pointer; color:var(--muted); font-size:13px }
+.slot.sel{ border-color:var(--ring); color:var(--fg); box-shadow:0 0 0 3px rgba(137,180,255,.08) }
+.sep{ border-color:var(--border); opacity:.5; margin:12px 0 }
+.label{ display:block; margin:6px 0 8px }
+.input{ padding:10px; width:100%; border-radius:10px; border:1px solid var(--border); background:var(--card); color:var(--fg) }
+.row{ display:grid; grid-template-columns:1fr 1fr; gap:10px }
+
+/* Client */
+.pick{ position:absolute; right:8px; top:8px; background:rgba(0,0,0,.55); border:1px solid var(--border); color:var(--fg); font-size:12px; padding:5px 8px; border-radius:999px; cursor:pointer; backdrop-filter: blur(6px) }
+.pick.active{ background: linear-gradient(90deg, rgba(137,180,255,.85), rgba(192,168,255,.85)); color:#0a0a0a; font-weight:800 }
+.quota{ font-size:13px; color:var(--muted) }
+
+/* Footer */
+footer{ padding:40px 0 70px; color:var(--muted); border-top:1px solid var(--border) }
+.footer-row{ display:flex; justify-content:space-between; align-items:center; gap:16px; flex-wrap:wrap }
+.ig{ color:inherit; text-decoration:none; display:inline-flex; align-items:center; gap:8px }
+
+/* Light */
+.light{ --bg:#f6f7fb; --bg-2:#ffffff; --fg:#0b0c10; --muted:#4a5160; --card:#ffffff; --border:rgba(0,0,0,.14); --ring: rgba(60,110,255,.45); background:#fff; }
+.light header{ background: rgba(255,255,255,.7) }
+.light nav a{ color: var(--muted) }
+.light .card{ background: #fff; border-color:rgba(0,0,0,.12); box-shadow: 0 8px 28px rgba(0,0,0,.06) }
+.light .chip,.light .tab,.light .slot{ background:#f2f4f7; color:#383c45; border-color:rgba(0,0,0,.12) }
+.light .tab.active{ color:#0b0c10; border-color:rgba(60,110,255,.45); box-shadow:0 0 0 3px rgba(60,110,255,.12) }
+.light .slot.sel{ color:#0b0c10; border-color:rgba(60,110,255,.45); box-shadow:0 0 0 3px rgba(60,110,255,.12) }
+.light .folio .ph{ border-color:rgba(0,0,0,.12) }
+.light .cal-grid div{ color:#555 } .light .cal-grid button{ color:#0b0c10; background:#fff }
+.light .cal-grid button.sel{ background:linear-gradient(180deg, rgba(60,110,255,.10), rgba(60,110,255,.05)); box-shadow: inset 0 0 0 1px rgba(60,110,255,.45)}
+.light .btn{ background:#0e0f14; color:#ffffff; border-color:rgba(0,0,0,.18); box-shadow: 0 10px 26px rgba(0,0,0,.12) }
+.light .btn:hover{ transform:translateY(-1px) scale(1.03); box-shadow:0 10px 26px rgba(60,110,255,.18); border-color:rgba(60,110,255,.35) }
+/* --- FIX: коректний фон і текст у світлій темі --- */
+.light body{
+  background: #f6f7fb !important; /* світлий фон замість темного градієнта */
+  color: var(--fg);
+  background-attachment: initial;  /* щоб не тягнуло fixed-ефект темного bg */
+}
+
+/* опційно пом'якшити декоративні шари у світлій темі */
+.light .waves{ opacity: .12; }
+.light .noise{ opacity: .04; }
+/* ===== Aesthetic tweaks for Booking UI ===== */
+
+/* 1) Шапка календаря – заокруглена "пігулка" */
+.calendar{ --cell:44px; }
+.cal-head{
+  margin:10px;                          /* відступ від краю карти */
+  padding:8px 12px;
+  border:1px solid var(--border);
+  border-radius:16px;                   /* <- більше заокруглення */
+  background: linear-gradient(180deg, rgba(255,255,255,.04), rgba(255,255,255,.02));
+  box-shadow: 0 8px 28px rgba(0,0,0,.12);
+  border-bottom: none !important;       /* не потрібна лінія під шапкою */
+}
+.cal-head #calLabel strong{ letter-spacing:.3px; }
+.cal-head .btn{
+  padding:6px 10px;
+  border-radius:10px;
+  background:transparent;
+  box-shadow:none;
+  border:1px solid var(--border);
+}
+.cal-head .btn:hover{
+  transform:none;
+  box-shadow:0 6px 18px rgba(0,0,0,.12);
+  border-color:var(--ring);
+}
+
+/* 2) Блок праворуч – делікатніші слоти й поля */
+.slots.card{ padding:16px; }
+.slots h4{ margin:0 0 10px; }
+
+.slot{
+  background: rgba(255,255,255,.03);
+  border-color: rgba(255,255,255,.14);
+  color: var(--fg);
+  backdrop-filter: blur(4px);
+  transition: transform .15s ease, box-shadow .15s ease, border-color .15s ease;
+}
+.slot:hover{
+  transform: translateY(-1px);
+  box-shadow: 0 8px 18px rgba(0,0,0,.18);
+  border-color: var(--ring);
+}
+.slot.sel{
+  background: linear-gradient(90deg, rgba(137,180,255,.18), rgba(192,168,255,.18));
+  color:#0b0c10;
+  border-color: var(--ring);
+}
+
+/* поля форми – легший фон і нормальний focus */
+.input, select.input{
+  background: rgba(255,255,255,.03);
+  border-color: rgba(255,255,255,.14);
+}
+.input:focus{
+  outline: none;
+  border-color: var(--ring);
+  box-shadow: 0 0 0 4px rgba(137,180,255,.08);
+}
+
+/* кнопка підтвердження – трохи повітря */
+#submitBooking.btn{ margin-top:10px; border-radius:12px; }
+
+.muted.hint{ margin-top:8px; opacity:.85; }
+.sep{ margin:10px 0; opacity:.45; }
+
+@media (max-width:900px){
+  .cal-head{ margin:6px; }
+}
+
+/* Світла тема – ті ж самі відчуття */
+.light .cal-head{
+  background:#fff;
+  box-shadow:0 8px 24px rgba(0,0,0,.06);
+  border:1px solid rgba(0,0,0,.1);
+}
+.light .slot{
+  background:#f4f6fb;
+  border-color: rgba(0,0,0,.12);
+}
+.light .slot.sel{
+  background: linear-gradient(90deg, rgba(60,110,255,.18), rgba(120,180,255,.18));
+  color:#0b0c10;
+  border-color: rgba(60,110,255,.45);
+}
+.light .input{
+  background:#f8f9fd;
+  border-color:rgba(0,0,0,.12);
+}
+/* === Booking Form Modern Minimal Look === */
+
+/* Контейнер з формою — більше повітря */
+.booking .slots {
+  padding: 20px 22px;
+}
+
+/* Заголовок "Пакет" ближче до стилю Apple */
+.booking label {
+  font-weight: 600;
+  color: var(--fg);
+  font-size: 14px;
+  margin-bottom: 6px;
+  display: block;
+}
+
+/* --- Випадаючий список (select) --- */
+select {
+  appearance: none;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid var(--border);
+  padding: 10px 14px;
+  width: 100%;
+  border-radius: 12px;
+  color: var(--fg);
+  font-size: 14px;
+  transition: all 0.2s ease;
+  cursor: pointer;
+}
+
+/* Красива стрілочка */
+select::after {
+  content: "▾";
+  float: right;
+  margin-right: 10px;
+}
+
+/* Ховер + фокус */
+select:hover,
+select:focus {
+  border-color: var(--ring);
+  box-shadow: 0 0 0 3px rgba(60, 110, 255, 0.15);
+  outline: none;
+}
+
+/* --- Поля input --- */
+.input {
+  border-radius: 12px;
+  padding: 10px 14px;
+  font-size: 14px;
+  border: 1px solid var(--border);
+  background: rgba(255, 255, 255, 0.04);
+  transition: 0.2s ease;
+}
+
+.input::placeholder {
+  color: var(--muted);
+}
+
+/* Hover/focus */
+.input:focus {
+  border-color: var(--ring);
+  box-shadow: 0 0 0 3px rgba(60,110,255,.15);
+  outline: none;
+}
+
+/* --- Кнопка підтвердження --- */
+#submitBooking {
+  margin-top: 12px;
+  padding: 12px;
+  width: 100%;
+  background: linear-gradient(140deg, rgba(255,255,255,.07), rgba(255,255,255,.02));
+  border: 1px solid var(--border);
+  color: var(--fg);
+  border-radius: 14px;
+  font-size: 14px;
+  transition: 0.2s ease;
+}
+
+#submitBooking:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 12px 26px rgba(0,0,0,0.25);
+  border-color: var(--ring);
+}
+
+#submitBooking:active {
+  transform: scale(0.99);
+}
+
+/* Відступ між елементами */
+.booking .row {
+  gap: 12px;
+}
+/* Time input під стиль .input */
+input[type="time"].input {
+  appearance: none;
+  -webkit-appearance: none;
+  -moz-appearance: textfield;
+  background: rgba(255,255,255,.03);
+  border: 1px solid var(--border);
+  color: var(--fg);
+  border-radius: 12px;
+  padding: 10px 12px;
+  font-size: 14px;
+}
+input[type="time"].input:focus {
+  outline: none;
+  border-color: var(--ring);
+  box-shadow: 0 0 0 3px rgba(137,180,255,.12);
+}
+/* піктограма годинника/колеса у WebKit */
+input[type="time"].input::-webkit-calendar-picker-indicator{
+  filter: invert(0.85);
+  opacity: .8;
+}
+.light input[type="time"].input{
+  background:#f8f9fd;
+  border-color: rgba(0,0,0,.12);
+}
+/* === Admin/Client layout helpers === */
+.panel-grid {
+  display: grid;
+  grid-template-columns: 420px 1fr;
+  gap: 16px;
+  align-items: start;
+}
+
+@media (max-width: 980px) {
+  .panel-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.panel-card {
+  padding: 16px;
+}
+
+.section-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.stack {
+  display: grid;
+  gap: 10px;
+}
+
+.file-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  justify-content: space-between;
+  flex-wrap: wrap;
+}
+
+.thumb-grid {
+  margin-top: 12px;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 12px;
+}
+
+.thumb {
+  border-radius: 14px;
+  overflow: hidden;
+  border: 1px solid rgba(255,255,255,0.10);
+  background: rgba(0,0,0,0.25);
+}
+
+.thumb img {
+  width: 100%;
+  height: 220px;
+  object-fit: cover;
+  display: block;
+}
+
+.thumb-foot {
+  padding: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.icon-btn {
+  width: 36px;
+  height: 36px;
+  border-radius: 12px;
+  border: 1px solid rgba(255,255,255,0.15);
+  background: rgba(255,255,255,0.06);
+  cursor: pointer;
+}
+.thumb.selected {
+  border: 2px solid rgba(34, 197, 94, 0.9);
+  box-shadow: 0 0 0 4px rgba(34, 197, 94, 0.15);
+}
+
+
+/* ===== Mobile base ===== */
+* { box-sizing: border-box; }
+img { max-width: 100%; height: auto; display: block; }
+
+@media (max-width: 720px) {
+  .container { padding-left: 14px; padding-right: 14px; }
+
+  /* Header / Nav */
+  header .nav { flex-wrap: wrap; gap: 10px; }
+  header .brand { max-width: 100%; }
+  header nav {
+    width: 100%;
+    display: flex;
+    gap: 10px;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    padding-bottom: 6px;
+  }
+  header nav a { white-space: nowrap; }
+
+  /* Hero */
+  .hero { grid-template-columns: 1fr !important; gap: 14px !important; }
+  .hero-photo { order: -1; } /* фото зверху, текст нижче */
+
+  /* Grids */
+  .grid.cols-2, .grid.cols-3 { grid-template-columns: 1fr !important; }
+
+  /* Booking */
+  .booking { grid-template-columns: 1fr !important; }
+  .row { grid-template-columns: 1fr !important; }
+
+  /* Inputs/buttons full width */
+  .input, .btn, .btn.wide { width: 100%; }
+}
+
+/* Thumbs / gallery */
+@media (max-width: 420px) {
+  .thumb-grid { grid-template-columns: 1fr !important; }
+  .folio { grid-template-columns: 1fr !important; }
+}
