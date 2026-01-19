@@ -9,7 +9,11 @@ const bookingSchema = new mongoose.Schema({
   endAt: { type: Date, required: true },
 
   status: { type: String, enum: ['pending','confirmed','canceled','completed'], default: 'pending' },
-  note: { type: String, default: '' }
+  note: { type: String, default: '' },
+
+  // admin blocks ("day off" / "busy")
+  isBlock: { type: Boolean, default: false },
+  blockReason: { type: String, default: '' },
 }, { timestamps: true });
 
 bookingSchema.index({ startAt: 1, endAt: 1, status: 1 });

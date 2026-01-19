@@ -1,8 +1,17 @@
 const API_BASE = import.meta.env.VITE_API_BASE || "http://localhost:5001/api";
 
+// ✅ Покращений fetchJson: показує реальну помилку бекенду (а не просто "Server error")
 async function fetchJson(url, options) {
   const res = await fetch(url, options);
-  const data = await res.json().catch(() => ({}));
+
+  const rawText = await res.text();
+  let data = {};
+  try {
+    data = rawText ? JSON.parse(rawText) : {};
+  } catch {
+    data = { message: rawText };
+  }
+
   if (!res.ok) {
     const msg = data?.message || `Request failed (${res.status})`;
     throw new Error(msg);
@@ -23,7 +32,7 @@ export async function createBooking(data) {
   });
 }
 
-// ===== Client gallery =====
+// ===== Client =====
 export async function clientLogin(code) {
   return fetchJson(`${API_BASE}/galleries/login`, {
     method: "POST",
@@ -69,6 +78,12 @@ export async function adminCreateGallery(token, payload) {
   });
 }
 
+export async function adminGetGallery(token, galleryId) {
+  return fetchJson(`${API_BASE}/admin/galleries/${galleryId}`, {
+    headers: { Authorization: `Bearer ${token}` },
+  });
+}
+
 export async function adminUploadPhotos(token, galleryId, files) {
   const fd = new FormData();
   for (const f of files) fd.append("photos", f);
@@ -79,9 +94,23 @@ export async function adminUploadPhotos(token, galleryId, files) {
     body: fd,
   });
 
-  const data = await res.json().catch(() => ({}));
+  const rawText = await res.text();
+  let data = {};
+  try {
+    data = rawText ? JSON.parse(rawText) : {};
+  } catch {
+    data = { message: rawText };
+  }
+
   if (!res.ok) throw new Error(data?.message || `Upload failed (${res.status})`);
   return data;
+}
+
+export async function adminDeleteGallery(token, galleryId) {
+  return fetchJson(`${API_BASE}/admin/galleries/${galleryId}`, {
+    method: "DELETE",
+    headers: { Authorization: `Bearer ${token}` },
+  });
 }
 
 export async function adminDeletePhoto(token, galleryId, photoId) {
@@ -98,3 +127,34 @@ export async function adminSetPhotoStatus(token, galleryId, photoId, status) {
     body: JSON.stringify({ status }),
   });
 }
+
+// ===== Admin Bookings =====
+export async function adminListBookings(token, date) {
+  const q = date ? `?date=${encodeURIComponent(date)}` : "";
+  return fetchJson(`${API_BASE}/bookings${q}`, {
+    headers: { Authorization: `Bearer ${token}` },
+  });
+}
+
+export async function adminCreateBlock(token, payload) {
+  return fetchJson(`${API_BASE}/bookings/block`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+    body: JSON.stringify(payload),
+  });
+}
+
+export async function adminUpdateBooking(token, id, payload) {
+  return fetchJson(`${API_BASE}/bookings/${id}`, {
+    method: "PUT",
+    headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+    body: JSON.stringify(payload),
+  });
+}
+
+export async function adminDeleteBooking(token, id) {
+  return fetchJson(`${API_BASE}/bookings/${id}`, {
+    method: "DELETE",
+    headers: { Authorization: `Bearer ${token}` },
+  });
+} 

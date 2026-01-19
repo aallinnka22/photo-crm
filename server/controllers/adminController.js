@@ -1,6 +1,7 @@
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 const Gallery = require("../models/Gallery");
+const Selection = require("../models/Selection"); // ✅ ДОДАНО
 const { slugify, randomCode } = require("../utils/slug");
 const { cloudinary, assertCloudinaryConfigured } = require("../services/cloudinary");
 
@@ -81,8 +82,26 @@ exports.createGallery = async (req, res) => {
 
 exports.listGalleries = async (req, res) => {
   try {
-    const items = await Gallery.find().sort({ createdAt: -1 }).limit(100);
-    return res.json({ ok: true, items });
+    // було: items = Gallery.find...
+    const items = await Gallery.find().sort({ createdAt: -1 }).limit(100).lean();
+
+    // ✅ ДОДАНО: підтягнути кількість вибраних фото (selectedCount)
+    const ids = items.map((g) => g._id);
+    const selections = await Selection.find({ gallery: { $in: ids } })
+      .select("gallery selectedPhotoIds")
+      .lean();
+
+    const selMap = new Map();
+    for (const s of selections) {
+      selMap.set(String(s.gallery), s);
+    }
+
+    const merged = items.map((g) => ({
+      ...g,
+      selectedCount: selMap.get(String(g._id))?.selectedPhotoIds?.length || 0,
+    }));
+
+    return res.json({ ok: true, items: merged });
   } catch (e) {
     console.error("listGalleries error:", e.message);
     return res.status(500).json({ message: "Server error" });
@@ -91,9 +110,21 @@ exports.listGalleries = async (req, res) => {
 
 exports.getGallery = async (req, res) => {
   try {
-    const g = await Gallery.findById(req.params.id);
+    // було: Gallery.findById(...)
+    const g = await Gallery.findById(req.params.id).lean();
     if (!g) return res.status(404).json({ message: "Not found" });
-    return res.json({ ok: true, gallery: g });
+
+    // ✅ ДОДАНО: підтягнути вибір клієнта з Selection
+    const sel = await Selection.findOne({ gallery: req.params.id }).lean();
+
+    return res.json({
+      ok: true,
+      gallery: {
+        ...g,
+        selectedPhotoIds: sel?.selectedPhotoIds || [],
+        comment: sel?.note || "",
+      },
+    });
   } catch (e) {
     console.error("getGallery error:", e.message);
     return res.status(500).json({ message: "Server error" });
@@ -191,5 +222,33 @@ exports.setPhotoStatus = async (req, res) => {
   } catch (e) {
     console.error("setPhotoStatus error:", e.message);
     return res.status(500).json({ message: "Server error" });
+  }
+};
+
+exports.deleteGallery = async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    const gallery = await Gallery.findById(id);
+    if (!gallery) {
+      return res.status(404).json({ message: "Галерею не знайдено" });
+    }
+
+    // ✅ видаляємо фото з Cloudinary
+    for (const photo of gallery.photos) {
+      if (photo.publicId) {
+        await cloudinary.uploader.destroy(photo.publicId);
+      }
+    }
+
+    await Gallery.findByIdAndDelete(id);
+
+    // ✅ ДОДАНО: почистити Selection щоб не висіло сміття
+    await Selection.deleteOne({ gallery: id });
+
+    return res.json({ ok: true });
+  } catch (e) {
+    console.error("deleteGallery error:", e);
+    return res.status(500).json({ message: "Помилка видалення галереї" });
   }
 };

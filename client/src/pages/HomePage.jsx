@@ -1,6 +1,6 @@
 import { useMemo, useState, useEffect } from "react";
 import { Link } from "react-router-dom";
-
+import ChatWidget from "../components/ChatWidget";
 export default function HomePage() {
   const API_BASE = useMemo(() => {
     // Має збігатися з client/src/api.js: VITE_API_BASE=http://localhost:5001/api
@@ -24,9 +24,18 @@ export default function HomePage() {
   const [bookMsg, setBookMsg] = useState("");
   const [bookLoading, setBookLoading] = useState(false);
 
+  // ✅ Slots (availability)
+  const [slots, setSlots] = useState([]); // [{ time: "12:00", isFree: true }]
+  const [slotsLoading, setSlotsLoading] = useState(false);
+  const [slotsError, setSlotsError] = useState("");
+
   // apply theme to html
   useEffect(() => {
-    document.documentElement.dataset.theme = theme;
+    if (theme === "light") {
+      document.documentElement.classList.add("light");
+    } else {
+      document.documentElement.classList.remove("light");
+    }
     localStorage.setItem("theme", theme);
   }, [theme]);
 
@@ -50,12 +59,60 @@ export default function HomePage() {
     el.scrollIntoView({ behavior: "smooth", block: "start" });
   }
 
+  // ✅ завантаження слотів на дату
+  async function loadSlots(dateStr) {
+    if (!dateStr) return;
+    setSlotsError("");
+    setSlotsLoading(true);
+
+    try {
+      const res = await fetch(`${API_BASE}/bookings/availability?date=${encodeURIComponent(dateStr)}`);
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) throw new Error(data?.message || "Помилка отримання слотів");
+
+      const list = Array.isArray(data?.slots) ? data.slots : [];
+      setSlots(list);
+
+      // якщо вибраний час пустий/зайнятий — ставимо перший вільний
+      const chosen = String(time || "");
+      const stillFree = list.some((s) => s?.time === chosen && s?.isFree);
+      if (!chosen || !stillFree) {
+        const firstFree = list.find((s) => s?.isFree);
+        if (firstFree?.time) setTime(firstFree.time);
+      }
+    } catch (e) {
+      setSlots([]);
+      setSlotsError(e?.message || "Помилка");
+    } finally {
+      setSlotsLoading(false);
+    }
+  }
+
+  // ✅ коли змінюється дата — оновлюємо слоти
+  useEffect(() => {
+    loadSlots(date);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [date]);
+
   async function submitBooking() {
     setBookMsg("");
 
     if (!date || !time || !name.trim() || !contact.trim()) {
       setBookMsg("❌ Заповніть дату, час, імʼя та контакт.");
       return;
+    }
+
+    // ✅ якщо є слоти — перевіряємо, що обраний слот реально вільний
+    if (slots?.length) {
+      const slot = slots.find((s) => s?.time === time);
+      if (!slot) {
+        setBookMsg("❌ Оберіть час зі списку доступних слотів.");
+        return;
+      }
+      if (!slot.isFree) {
+        setBookMsg("❌ Цей слот вже зайнятий. Оберіть інший час.");
+        return;
+      }
     }
 
     setBookLoading(true);
@@ -79,6 +136,9 @@ export default function HomePage() {
       setBookMsg(data?.message || "✅ Заявку відправлено! Я звʼяжусь з вами для підтвердження.");
       setName("");
       setContact("");
+
+      // ✅ після бронювання — перезавантажуємо слоти, щоб відразу стало видно зайнятий час
+      await loadSlots(date);
     } catch (e) {
       setBookMsg("❌ " + (e?.message || "Помилка"));
     } finally {
@@ -288,12 +348,70 @@ export default function HomePage() {
               <div style={{ display: "grid", gap: 12, paddingTop: 12 }}>
                 <div>
                   <label className="muted label">Дата</label>
-                  <input className="input" type="date" value={date} onChange={(e) => setDate(e.target.value)} />
+                  <input
+                    className="input"
+                    type="date"
+                    value={date}
+                    onChange={(e) => setDate(e.target.value)}
+                  />
                 </div>
 
+                {/* ✅ СЛОТИ ЗАМІСТЬ input time */}
                 <div>
                   <label className="muted label">Час</label>
-                  <input className="input" type="time" step="900" value={time} onChange={(e) => setTime(e.target.value)} />
+
+                  <div
+                    className="card"
+                    style={{
+                      padding: 12,
+                      borderRadius: 14,
+                      border: "1px solid rgba(255,255,255,0.10)",
+                      background: "rgba(0,0,0,0.18)",
+                    }}
+                  >
+                    <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+                      {(slots || []).map((s) => (
+                        <button
+                          key={s.time}
+                          type="button"
+                          className="btn"
+                          onClick={() => setTime(s.time)}
+                          disabled={!s.isFree}
+                          title={!s.isFree ? "Вже зайнято" : "Вільний слот"}
+                          style={{
+                            padding: "8px 10px",
+                            opacity: s.isFree ? 1 : 0.35,
+                            cursor: s.isFree ? "pointer" : "not-allowed",
+                            border:
+                              time === s.time
+                                ? "2px solid rgba(34,197,94,0.85)"
+                                : "1px solid rgba(255,255,255,0.12)",
+                            background: "transparent",
+                          }}
+                        >
+                          {s.time}
+                        </button>
+                      ))}
+                    </div>
+
+                    {slotsLoading ? (
+                      <div className="muted" style={{ marginTop: 8, fontSize: 12 }}>
+                        Завантажую слоти…
+                      </div>
+                    ) : null}
+
+                    {slotsError ? (
+                      <div className="muted" style={{ marginTop: 8, fontSize: 12 }}>
+                        ❌ {slotsError}
+                      </div>
+                    ) : null}
+
+                    {!slotsLoading && !slotsError && !slots.length ? (
+                      <div className="muted" style={{ marginTop: 8, fontSize: 12 }}>
+                        Немає слотів для цієї дати.
+                      </div>
+                    ) : null}
+                  </div>
                 </div>
 
                 <div className="muted" style={{ fontSize: 12 }}>
@@ -337,7 +455,7 @@ export default function HomePage() {
                 type="button"
                 style={{ marginTop: 12 }}
                 onClick={submitBooking}
-                disabled={bookLoading}
+                disabled={bookLoading || slotsLoading}
               >
                 {bookLoading ? "Відправляю..." : "Підтвердити бронювання"}
               </button>
@@ -423,6 +541,8 @@ export default function HomePage() {
           </div>
         </div>
       </footer>
+      <ChatWidget apiBase={API_BASE} />
+
     </>
   );
 }

@@ -6,8 +6,13 @@ import "./style.css";
 
 // Apply theme ASAP (prevents "white flash" and broken theme on non-home pages)
 try {
-  const saved = localStorage.getItem("theme") || "dark";
-  document.documentElement.dataset.theme = saved;
+ const saved = localStorage.getItem("theme") || "dark";
+if (saved === "light") {
+  document.documentElement.classList.add("light");
+} else {
+  document.documentElement.classList.remove("light");
+}
+
 } catch (_) {
   // ignore
 }

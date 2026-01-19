@@ -18,4 +18,7 @@ router.post("/galleries/:id/photos", adminAuth, upload.array("photos", 50), ctrl
 router.patch("/galleries/:id/photos/:photoId", adminAuth, ctrl.setPhotoStatus);
 router.delete("/galleries/:id/photos/:photoId", adminAuth, ctrl.deletePhoto);
 
+// ✅ НОВЕ: видалити всю галерею
+router.delete("/galleries/:id", adminAuth, ctrl.deleteGallery);
+
 module.exports = router;
