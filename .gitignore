@@ -1,5 +1,7 @@
 node_modules
-server/.env
+.env
 .env.*
+server/.env
+client/.env
 dist
 build
