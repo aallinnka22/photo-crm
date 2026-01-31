@@ -3,6 +3,64 @@ import { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import { clientLogin, getMyGallery, saveMySelection } from "../api";
 
+/* =========================
+   ✅ ІКОНКА ЗАВАНТАЖЕННЯ
+========================= */
+function DownloadIcon({ size = 18 }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" aria-hidden="true">
+      <path
+        d="M12 3v10m0 0 4-4m-4 4-4-4"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+      <path
+        d="M4 17v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-2"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+      />
+    </svg>
+  );
+}
+
+/* =========================
+   ✅ календарний місяць + відлік часу
+========================= */
+function addOneMonth(dateLike) {
+  const d = new Date(dateLike);
+  if (Number.isNaN(d.getTime())) return null;
+
+  const y = d.getFullYear();
+  const m = d.getMonth();
+  const day = d.getDate();
+
+  const target = new Date(y, m + 1, 1);
+  const lastDay = new Date(target.getFullYear(), target.getMonth() + 1, 0).getDate();
+
+  target.setDate(Math.min(day, lastDay));
+  target.setHours(23, 59, 59, 999);
+  return target;
+}
+
+function getTimeLeft(expiresAt) {
+  const end = new Date(expiresAt).getTime();
+  const diff = end - Date.now();
+
+  if (!Number.isFinite(end) || diff <= 0) {
+    return { expired: true, days: 0, hours: 0, minutes: 0 };
+  }
+
+  const totalMinutes = Math.floor(diff / 60000);
+  const days = Math.floor(totalMinutes / (60 * 24));
+  const hours = Math.floor((totalMinutes % (60 * 24)) / 60);
+  const minutes = totalMinutes % 60;
+
+  return { expired: false, days, hours, minutes };
+}
+
 export default function ClientPage() {
   const [code, setCode] = useState("");
   const [status, setStatus] = useState("");
@@ -18,10 +76,35 @@ export default function ClientPage() {
   const [lbOpen, setLbOpen] = useState(false);
   const [lbIndex, setLbIndex] = useState(0);
 
+  // tick for timer
+  const [tick, setTick] = useState(0);
+
   const maxSelect = useMemo(
     () => Number(gallery?.selectionLimit ?? gallery?.maxSelect ?? 0) || 0,
     [gallery]
   );
+
+  useEffect(() => {
+    const id = setInterval(() => setTick((x) => x + 1), 60_000);
+    return () => clearInterval(id);
+  }, []);
+
+  const expiresAt = useMemo(() => {
+    if (!gallery) return null;
+    if (gallery.expiresAt) return new Date(gallery.expiresAt);
+    if (gallery.createdAt) return addOneMonth(gallery.createdAt);
+    return null;
+  }, [gallery]);
+
+  const timeLeft = useMemo(() => {
+    if (!expiresAt) return null;
+    return getTimeLeft(expiresAt);
+  }, [expiresAt, tick]);
+
+  const expiresLabel = useMemo(() => {
+    if (!expiresAt) return "";
+    return expiresAt.toLocaleDateString("uk-UA", { year: "numeric", month: "2-digit", day: "2-digit" });
+  }, [expiresAt, tick]);
 
   useEffect(() => {
     const t = localStorage.getItem("theme") || "dark";
@@ -169,13 +252,35 @@ export default function ClientPage() {
     }
   }
 
-  // -------- Lightbox helpers ----------
+  async function downloadAllFinal() {
+    if (!finalPhotos.length) {
+      setStatus("Фінальних фото ще немає.");
+      return;
+    }
+
+    setStatus("Запускаю завантаження всіх фінальних фото…");
+
+    for (const p of finalPhotos) {
+      await downloadFinal(p);
+      await new Promise((r) => setTimeout(r, 250));
+    }
+
+    setStatus("✅ Завантаження запущено.");
+    setTimeout(() => setStatus(""), 1500);
+  }
+
+  // -------- Photos helpers ----------
   const photos = Array.isArray(gallery?.photos) ? gallery.photos : [];
-const normStatus = (p) => String(p?.status || "preview").trim().toLowerCase();
+  const normStatus = (p) => String(p?.status || "preview").trim().toLowerCase();
 
-const previewPhotos = photos.filter((p) => normStatus(p) !== "final");
-const finalPhotos = photos.filter((p) => normStatus(p) === "final");
+  const previewPhotos = photos.filter((p) => normStatus(p) !== "final");
+  const finalPhotos = photos.filter((p) => normStatus(p) === "final");
 
+  const coverPhoto = useMemo(() => {
+    if (finalPhotos.length) return finalPhotos[0];
+    if (previewPhotos.length) return previewPhotos[0];
+    return photos[0] || null;
+  }, [finalPhotos, previewPhotos, photos]);
 
   const lbPhoto = photos[lbIndex];
 
@@ -253,6 +358,85 @@ const finalPhotos = photos.filter((p) => normStatus(p) === "final");
       <div className="waves" aria-hidden="true"></div>
       <div className="noise" aria-hidden="true"></div>
 
+      {/* ✅ локальні стилі для мобільних кнопок */}
+      <style>{`
+        /* header кнопка "Завантажити всі" — компактна на мобільному */
+        @media (max-width: 640px) {
+          .btn-download-all {
+            padding: 10px 12px !important;
+            border-radius: 16px !important;
+            font-size: 14px !important;
+            gap: 8px !important;
+            white-space: nowrap !important;
+          }
+        }
+
+        /* Кнопка завантаження на фото — щоб не була “жахлива” в мобільній */
+        .btn-download-one {
+          position: absolute;
+          right: 10px;
+          bottom: 10px;
+          padding: 8px 10px;
+          display: inline-flex;
+          align-items: center;
+          gap: 8px;
+        }
+
+        @media (max-width: 640px) {
+          .btn-download-one {
+            width: 44px !important;
+            height: 44px !important;
+            padding: 0 !important;
+            border-radius: 999px !important;
+            display: grid !important;
+            place-items: center !important;
+          }
+          .btn-download-one .btn-text {
+            display: none !important;
+          }
+          .btn-download-one svg {
+            width: 20px !important;
+            height: 20px !important;
+          }
+        }
+
+        /* Коментарний блок: краще виглядає + кнопка поруч */
+        .comment-head {
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          gap: 12px;
+          margin-bottom: 10px;
+        }
+        @media (max-width: 640px) {
+          .comment-head {
+            flex-direction: column;
+            align-items: stretch;
+          }
+          .comment-head .btn {
+            width: 100%;
+          }
+        }
+      `}</style>
+
+      {/* ✅ aurora фон */}
+      <div
+        aria-hidden="true"
+        style={{
+          position: "fixed",
+          inset: -120,
+          zIndex: 0,
+          pointerEvents: "none",
+          background:
+            "radial-gradient(600px 280px at 15% 25%, rgba(120, 180, 255, 0.28), transparent 60%)," +
+            "radial-gradient(520px 260px at 85% 20%, rgba(255, 120, 200, 0.22), transparent 55%)," +
+            "radial-gradient(700px 320px at 50% 85%, rgba(120, 255, 210, 0.18), transparent 60%)",
+          filter: "blur(40px)",
+          transform: "translate3d(0,0,0)",
+          opacity: 0.9,
+        }}
+      />
+
       <header>
         <div className="container nav">
           <Link className="brand" to="/">
@@ -260,53 +444,169 @@ const finalPhotos = photos.filter((p) => normStatus(p) === "final");
             <h1>Alina Photographer</h1>
           </Link>
 
-        
-
           <button className="btn" type="button" onClick={logout}>Вийти</button>
         </div>
       </header>
 
-      <main className="container" style={{ paddingBottom: 50, overflowX: "hidden" }}>
-        <section style={{ paddingTop: 18 }}>
-          <div style={{ display: "flex", alignItems: "baseline", justifyContent: "space-between", gap: 12 }}>
-            <div>
-              <h2 className="title" style={{ marginBottom: 6 }}>Галерея</h2>
-              <p className="lead" style={{ margin: 0 }}>
-                Натисніть на фото — щоб відкрити на весь екран. Натисніть ❤ — щоб обрати для ретуші.
-              </p>
-            </div>
+      <main className="container" style={{ paddingBottom: 50, overflowX: "hidden", position: "relative", zIndex: 1 }}>
+        {/* HERO */}
+        {coverPhoto ? (
+          <section style={{ paddingTop: 18, marginBottom: 18 }}>
+            <div
+              style={{
+                position: "relative",
+                borderRadius: 22,
+                overflow: "hidden",
+                border: "1px solid rgba(255,255,255,0.10)",
+                background: "rgba(0,0,0,0.25)",
+                boxShadow: "0 30px 80px rgba(0,0,0,0.35)",
+              }}
+            >
+              <img
+                src={coverPhoto.url}
+                alt={coverPhoto.filename || "cover"}
+                loading="lazy"
+                style={{
+                  width: "100%",
+                  height: "min(62vh, 520px)",
+                  objectFit: "cover",
+                  display: "block",
+                  cursor: "zoom-in",
+                  transform: "scale(1.02)",
+                }}
+                onClick={() => openLightboxById(coverPhoto._id || coverPhoto.id)}
+              />
 
-            <button className="btn" type="button" onClick={save} disabled={saving}>
-              {saving ? "Збереження…" : "Зберегти вибір"}
-            </button>
+              <div
+                style={{
+                  position: "absolute",
+                  inset: 0,
+                  background:
+                    "linear-gradient(180deg, rgba(0,0,0,0.15) 0%, rgba(0,0,0,0.55) 70%, rgba(0,0,0,0.75) 100%)",
+                }}
+              />
+
+              <div
+                style={{
+                  position: "absolute",
+                  left: 18,
+                  right: 18,
+                  bottom: 16,
+                  display: "flex",
+                  alignItems: "flex-end",
+                  justifyContent: "space-between",
+                  gap: 12,
+                }}
+              >
+                <div>
+                  <div
+                    style={{
+                      fontSize: "clamp(22px, 4vw, 46px)",
+                      fontWeight: 900,
+                      letterSpacing: 0.5,
+                      lineHeight: 1.05,
+                      textShadow: "0 10px 30px rgba(0,0,0,0.55)",
+                    }}
+                  >
+                    {gallery?.clientName || "Галерея"}
+                  </div>
+
+                  <div style={{ marginTop: 8, display: "inline-flex", gap: 10, flexWrap: "wrap" }}>
+                    {expiresAt && timeLeft ? (
+                      <span
+                        style={{
+                          padding: "8px 12px",
+                          borderRadius: 999,
+                          border: "1px solid rgba(255,255,255,0.14)",
+                          background: "rgba(0,0,0,0.35)",
+                          backdropFilter: "blur(10px)",
+                          fontWeight: 700,
+                          fontSize: 14,
+                        }}
+                      >
+                        ⏳ До видалення: {timeLeft.days} дн. {timeLeft.hours} год.
+                      </span>
+                    ) : null}
+
+                    {expiresAt ? (
+                      <span
+                        style={{
+                          padding: "8px 12px",
+                          borderRadius: 999,
+                          border: "1px solid rgba(255,255,255,0.14)",
+                          background: "rgba(0,0,0,0.35)",
+                          backdropFilter: "blur(10px)",
+                          fontWeight: 700,
+                          fontSize: 14,
+                        }}
+                      >
+                        🗓 До: {expiresLabel}
+                      </span>
+                    ) : null}
+                  </div>
+                </div>
+
+                <button
+                  type="button"
+                  className="btn"
+                  onClick={() => openLightboxById(coverPhoto._id || coverPhoto.id)}
+                  style={{ padding: "10px 12px" }}
+                >
+                  Відкрити
+                </button>
+              </div>
+            </div>
+          </section>
+        ) : null}
+
+        <section style={{ paddingTop: 18 }}>
+          <div>
+            <h2 className="title" style={{ marginBottom: 6 }}>Галерея</h2>
+            <p className="lead" style={{ margin: 0 }}>
+              Натисніть на фото — щоб відкрити на весь екран. Натисніть ❤ — щоб обрати для ретуші.
+            </p>
           </div>
 
-          <div className="panel-grid" style={{ marginTop: 14, gridTemplateColumns: "1fr 1fr" }}>
+          {/* ✅ Залишили тільки коментар (гарніше) + на його рівні "Зберегти вибір" */}
+          <div style={{ marginTop: 14 }}>
             <div className="card panel-card">
-              <div style={{ fontWeight: 800, fontSize: 16 }}>
-                Клієнт: <span style={{ fontWeight: 700 }}>{gallery?.clientName || "—"}</span>
+              <div className="comment-head">
+                <div style={{ fontWeight: 900, fontSize: 16 }}>Коментар для ретуші (необов'язково)</div>
+
+                <button className="btn" type="button" onClick={save} disabled={saving}>
+                  {saving ? "Збереження…" : "Зберегти вибір"}
+                </button>
               </div>
-              <div className="muted" style={{ marginTop: 6 }}>
-                Обрано: <b>{selected.size}</b> / {maxSelect || "—"}
-              </div>
+
+              <textarea
+                className="input"
+                style={{ minHeight: 120, resize: "vertical" }}
+                value={comment}
+                onChange={(e) => setComment(e.target.value)}
+                placeholder="Наприклад: прибрати прищ / зробити шкіру м’якше / підправити колір…"
+              />
+
+              {/* статус/підказки */}
               {status ? <div className="muted" style={{ marginTop: 10 }}>{status}</div> : null}
             </div>
-
-            <div className="card panel-card">
-              <div className="stack">
-                <div style={{ fontWeight: 800 }}>Коментар для ретуші (необов'язково)</div>
-                <textarea
-                  className="input"
-                  style={{ minHeight: 110, resize: "vertical" }}
-                  value={comment}
-                  onChange={(e) => setComment(e.target.value)}
-                  placeholder="Наприклад: прибрати прищ / зробити шкіру м’якше / підправити колір…"
-                />
-              </div>
-            </div>
           </div>
 
-          <h3 style={{ marginTop: 18, marginBottom: 12 }}>Фото для ретуші</h3>
+          {/* ✅ Заголовок + лічильник обраних — тут, біля “Фото для ретуші” */}
+          <div
+            style={{
+              display: "flex",
+              alignItems: "baseline",
+              justifyContent: "space-between",
+              gap: 12,
+              marginTop: 18,
+              marginBottom: 12,
+            }}
+          >
+            <h3 style={{ margin: 0 }}>Фото для ретуші</h3>
+            <div className="muted" style={{ fontWeight: 700 }}>
+              Обрано: <b>{selected.size}</b> / {maxSelect || "—"}
+            </div>
+          </div>
 
           <div className="thumb-grid">
             {previewPhotos.length ? (
@@ -325,7 +625,6 @@ const finalPhotos = photos.filter((p) => normStatus(p) === "final");
                       overflow: "hidden",
                     }}
                   >
-                    {/* click on photo => lightbox */}
                     <img
                       src={p.url}
                       alt={p.filename || "photo"}
@@ -334,7 +633,6 @@ const finalPhotos = photos.filter((p) => normStatus(p) === "final");
                       onClick={() => openLightboxById(id)}
                     />
 
-                    {/* Like button (separate from image click) */}
                     <button
                       type="button"
                       onClick={() => toggleSelect(p)}
@@ -368,7 +666,31 @@ const finalPhotos = photos.filter((p) => normStatus(p) === "final");
             )}
           </div>
 
-          <h3 style={{ marginTop: 22, marginBottom: 12 }}>Фінальні фото (можна завантажити)</h3>
+          {/* Фінальні фото + “Завантажити всі” */}
+          <div
+            style={{
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "space-between",
+              gap: 12,
+              marginTop: 22,
+              marginBottom: 12,
+            }}
+          >
+            <h3 style={{ margin: 0 }}>Фінальні фото (можна завантажити)</h3>
+
+            <button
+              type="button"
+              className="btn btn-download-all"
+              onClick={downloadAllFinal}
+              disabled={!finalPhotos.length}
+              style={{ display: "inline-flex", alignItems: "center", gap: 8 }}
+              title={finalPhotos.length ? "Завантажити всі фінальні фото" : "Фінальних фото немає"}
+            >
+              <DownloadIcon />
+              Завантажити всі
+            </button>
+          </div>
 
           <div className="thumb-grid">
             {finalPhotos.length ? (
@@ -397,12 +719,19 @@ const finalPhotos = photos.filter((p) => normStatus(p) === "final");
 
                     <button
                       type="button"
-                      className="btn"
+                      className="btn btn-download-one"
                       onClick={() => downloadFinal(p)}
                       disabled={busy}
-                      style={{ position: "absolute", right: 10, bottom: 10, padding: "8px 10px" }}
+                      title="Завантажити"
                     >
-                      {busy ? "..." : "⬇️ Завантажити"}
+                      {busy ? (
+                        "..."
+                      ) : (
+                        <>
+                          <DownloadIcon />
+                          <span className="btn-text">Завантажити</span>
+                        </>
+                      )}
                     </button>
                   </div>
                 );
@@ -414,8 +743,6 @@ const finalPhotos = photos.filter((p) => normStatus(p) === "final");
         </section>
       </main>
 
-      {/* Lightbox */}
-         {/* Lightbox */}
       <Lightbox
         isOpen={lbOpen}
         src={lbPhoto?.url}
@@ -423,16 +750,12 @@ const finalPhotos = photos.filter((p) => normStatus(p) === "final");
         onClose={closeLightbox}
         onPrev={prevPhoto}
         onNext={nextPhoto}
-
-        // ✅ ДОДАЛИ: лайк/завантаження прямо у fullscreen
         canLike={(lbPhoto?.status || "preview") !== "final"}
         liked={selected.has(lbPhoto?._id || lbPhoto?.id)}
         onToggleLike={() => toggleSelect(lbPhoto)}
-
         canDownload={(lbPhoto?.status || "preview") === "final"}
         onDownload={() => downloadFinal(lbPhoto)}
       />
-
     </>
   );
 }
