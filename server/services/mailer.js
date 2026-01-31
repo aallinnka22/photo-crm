@@ -1,14 +1,31 @@
 const nodemailer = require("nodemailer");
 
+let cachedTransporter = null;
+
 function createTransporter() {
   const provider = (process.env.MAIL_PROVIDER || "smtp").toLowerCase();
+
+  // Таймаути, щоб не "висіло" по 20-40 секунд
+  const common = {
+    pool: true,
+    maxConnections: 1,
+    maxMessages: 50,
+    connectionTimeout: 10_000,
+    greetingTimeout: 10_000,
+    socketTimeout: 20_000,
+  };
 
   if (provider === "gmail") {
     if (!process.env.MAIL_USER || !process.env.MAIL_PASS) {
       throw new Error("MAIL_USER / MAIL_PASS are required for gmail provider");
     }
+
+    // Надійніше, ніж service:"gmail" (менше сюрпризів на хостингах)
     return nodemailer.createTransport({
-      service: "gmail",
+      ...common,
+      host: "smtp.gmail.com",
+      port: 465,
+      secure: true,
       auth: { user: process.env.MAIL_USER, pass: process.env.MAIL_PASS },
     });
   }
@@ -23,6 +40,7 @@ function createTransporter() {
   }
 
   return nodemailer.createTransport({
+    ...common,
     host,
     port,
     secure: port === 465,
@@ -30,8 +48,21 @@ function createTransporter() {
   });
 }
 
+function getTransporter() {
+  if (!cachedTransporter) {
+    cachedTransporter = createTransporter();
+
+    // Перевірка при старті (в логах Render буде видно, ок чи ні)
+    cachedTransporter.verify().then(
+      () => console.log("✅ Mail transporter ready"),
+      (err) => console.error("❌ Mail transporter verify failed:", err?.message || err)
+    );
+  }
+  return cachedTransporter;
+}
+
 async function sendMail({ to, subject, text, html }) {
-  const transporter = createTransporter();
+  const transporter = getTransporter();
 
   const from = process.env.MAIL_FROM || process.env.MAIL_USER || process.env.SMTP_USER;
   if (!from) throw new Error("MAIL_FROM (or MAIL_USER/SMTP_USER) is missing");

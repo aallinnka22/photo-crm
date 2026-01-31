@@ -10,7 +10,12 @@ function fmtDateTime(startAt) {
 
 async function notifyAdminBooking(booking) {
   const adminEmail = process.env.ADMIN_EMAIL;
-  if (!adminEmail) return;
+
+  // ✅ щоб одразу бачити, якщо на Render не задано
+  if (!adminEmail) {
+    console.warn("[notifyAdminBooking] ADMIN_EMAIL is not set -> skip sending");
+    return;
+  }
 
   const dt = fmtDateTime(booking.startAt);
   const subject = `Нове бронювання: ${booking.clientName} (${dt})`;
@@ -41,7 +46,22 @@ async function notifyAdminBooking(booking) {
   </div>
   `;
 
-  await sendMail({ to: adminEmail, subject, text, html });
+  // ✅ важливо: не даємо SMTP висіти вічно (на проді це рятує UX)
+  const TIMEOUT_MS = 8000;
+
+  try {
+    await Promise.race([
+      sendMail({ to: adminEmail, subject, text, html }),
+      new Promise((_, rej) =>
+        setTimeout(() => rej(new Error(`SMTP timeout after ${TIMEOUT_MS}ms`)), TIMEOUT_MS)
+      ),
+    ]);
+    console.log("[notifyAdminBooking] mail sent to:", adminEmail);
+  } catch (err) {
+    // ✅ лог повністю, щоб реально побачити причину на Render
+    console.error("[notifyAdminBooking] sendMail failed:", err);
+    throw err; // нехай bookingController зловить (він вже try/catch має)
+  }
 }
 
 module.exports = { notifyAdminBooking };
