@@ -55,19 +55,20 @@ exports.createBooking = async (req, res) => {
       blockReason: "",
     });
 
-    // ✅ ОЦЕ КЛЮЧОВЕ: відправка листа адміну
-    // Не ламаємо бронювання, навіть якщо пошта впала
-    try {
-      await notifyAdminBooking(booking);
-    } catch (mailErr) {
-      console.error("notifyAdminBooking failed:", mailErr?.message || mailErr);
-    }
-
-    return res.json({
+    // ✅ ЗМІНА ТІЛЬКИ ТУТ:
+    // 1) ВІДПОВІДАЄМО КЛІЄНТУ ОДРАЗУ
+    res.json({
       ok: true,
       booking,
       message: "✅ Заявку відправлено! Я звʼяжусь з вами для підтвердження.",
     });
+
+    // 2) EMAIL ЙДЕ У ФОНІ (НЕ БЛОКУЄ API)
+    notifyAdminBooking(booking).catch((mailErr) => {
+      console.error("notifyAdminBooking failed:", mailErr?.message || mailErr);
+    });
+
+    return; // щоб точно не було випадкових дубль-відповідей
   } catch (err) {
     console.error("createBooking error:", err);
     return res.status(500).json({ message: "Помилка створення бронювання" });
