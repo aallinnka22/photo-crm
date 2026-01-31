@@ -25,6 +25,24 @@ function getPhotoStatus(photo) {
   return "preview";
 }
 
+/* =========================
+   ✅ ДОДАЛИ: календарний +1 місяць (як на фронті)
+========================= */
+function addOneMonth(dateLike) {
+  const d = new Date(dateLike);
+  if (Number.isNaN(d.getTime())) return null;
+
+  const y = d.getFullYear();
+  const m = d.getMonth();
+  const day = d.getDate();
+
+  const target = new Date(y, m + 1, 1);
+  const lastDay = new Date(target.getFullYear(), target.getMonth() + 1, 0).getDate();
+  target.setDate(Math.min(day, lastDay));
+  target.setHours(23, 59, 59, 999);
+  return target;
+}
+
 // POST /api/galleries/login
 async function loginByCode(req, res) {
   try {
@@ -72,6 +90,11 @@ async function getMyPhotos(req, res) {
       _id: gallery._id,
       clientName: gallery.clientName,
       selectionLimit: gallery.selectionLimit,
+
+      // ✅ ДОДАЛИ: щоб фронт міг показувати відлік
+      createdAt: gallery.createdAt,
+      expiresAt: addOneMonth(gallery.createdAt),
+
       photos: (gallery.photos || []).map((p) => ({
         _id: p._id,
         url: p.url,
