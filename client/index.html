@@ -5,10 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Alina Photographer</title>
 
-    <!-- optional, але корисно для мобільного UI -->
+    <!-- щоб браузер коректно малював темні контролли/скрол/бар -->
     <meta name="color-scheme" content="dark light" />
-    <meta name="theme-color" content="#0b0d12" media="(prefers-color-scheme: dark)" />
-    <meta name="theme-color" content="#ffffff" media="(prefers-color-scheme: light)" />
 
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -17,21 +15,24 @@
       rel="stylesheet"
     />
 
-    <!-- 🔥 FIX: тема ставиться ДО React -->
+    <!-- 🔥 ФІКС: тема ставиться ДО React (і на html, і на body) -->
     <script>
       (function () {
         try {
-          const theme = localStorage.getItem("theme") || "dark";
-          const isLight = theme === "light";
+          var theme = localStorage.getItem("theme");
+          if (theme !== "light" && theme !== "dark") theme = "dark"; // дефолт темна
 
-          // важливо: ставимо клас на html одразу
-          document.documentElement.classList.toggle("light", isLight);
+          var root = document.documentElement;
 
-          // і на body теж (деякі стилі можуть бути прив’язані до body.light)
-          // якщо body ще нема — поставимо як тільки з’явиться
-          const applyBody = () => document.body && document.body.classList.toggle("light", isLight);
-          if (document.body) applyBody();
-          else document.addEventListener("DOMContentLoaded", applyBody, { once: true });
+          // прибрати старі класи (на випадок кешу/старого коду)
+          root.classList.remove("light", "dark");
+          root.classList.add(theme);
+
+          // ще й на body (бо інколи CSS написаний під body.light/body.dark)
+          document.addEventListener("DOMContentLoaded", function () {
+            document.body.classList.remove("light", "dark");
+            document.body.classList.add(theme);
+          });
         } catch (e) {}
       })();
     </script>
