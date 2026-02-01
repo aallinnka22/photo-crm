@@ -5,9 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Alina Photographer</title>
 
-    <!-- щоб браузер коректно малював темні контролли/скрол/бар -->
-    <meta name="color-scheme" content="dark light" />
-
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
@@ -15,28 +12,37 @@
       rel="stylesheet"
     />
 
-    <!-- 🔥 ФІКС: тема ставиться ДО React (і на html, і на body) -->
+    <!-- ✅ ТЕМА СТАВИТЬСЯ ДО React (і light, і dark) -->
     <script>
       (function () {
         try {
-          var theme = localStorage.getItem("theme");
-          if (theme !== "light" && theme !== "dark") theme = "dark"; // дефолт темна
+          var saved = localStorage.getItem("theme"); // "light" або "dark" або null
 
-          var root = document.documentElement;
+          // fallback: системна тема (особливо важливо для мобільного/WhatsApp браузера)
+          var systemPrefersDark =
+            window.matchMedia &&
+            window.matchMedia("(prefers-color-scheme: dark)").matches;
 
-          // прибрати старі класи (на випадок кешу/старого коду)
-          root.classList.remove("light", "dark");
-          root.classList.add(theme);
+          var theme = saved || (systemPrefersDark ? "dark" : "light");
 
-          // ще й на body (бо інколи CSS написаний під body.light/body.dark)
+          // ставимо класи явно
+          var isLight = theme === "light";
+          document.documentElement.classList.toggle("light", isLight);
+          document.documentElement.classList.toggle("dark", !isLight);
+
+          // щоб нативні елементи (інпути/скролбар) теж були ок
+          document.documentElement.style.colorScheme = isLight ? "light" : "dark";
+
+          // на випадок, якщо стилі в тебе прив’язані до body
           document.addEventListener("DOMContentLoaded", function () {
-            document.body.classList.remove("light", "dark");
-            document.body.classList.add(theme);
+            document.body.classList.toggle("light", isLight);
+            document.body.classList.toggle("dark", !isLight);
           });
         } catch (e) {}
       })();
     </script>
   </head>
+
   <body>
     <div id="root"></div>
     <script type="module" src="/src/main.jsx"></script>
