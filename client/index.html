@@ -5,6 +5,11 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Alina Photographer</title>
 
+    <!-- optional, але корисно для мобільного UI -->
+    <meta name="color-scheme" content="dark light" />
+    <meta name="theme-color" content="#0b0d12" media="(prefers-color-scheme: dark)" />
+    <meta name="theme-color" content="#ffffff" media="(prefers-color-scheme: light)" />
+
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
@@ -12,17 +17,21 @@
       rel="stylesheet"
     />
 
-    <!-- 🔥 ФІКС: тема ставиться ДО React -->
+    <!-- 🔥 FIX: тема ставиться ДО React -->
     <script>
       (function () {
         try {
-          const theme = localStorage.getItem("theme");
-          if (theme === "light") {
-            document.documentElement.classList.add("light");
-            document.addEventListener("DOMContentLoaded", () => {
-              document.body.classList.add("light");
-            });
-          }
+          const theme = localStorage.getItem("theme") || "dark";
+          const isLight = theme === "light";
+
+          // важливо: ставимо клас на html одразу
+          document.documentElement.classList.toggle("light", isLight);
+
+          // і на body теж (деякі стилі можуть бути прив’язані до body.light)
+          // якщо body ще нема — поставимо як тільки з’явиться
+          const applyBody = () => document.body && document.body.classList.toggle("light", isLight);
+          if (document.body) applyBody();
+          else document.addEventListener("DOMContentLoaded", applyBody, { once: true });
         } catch (e) {}
       })();
     </script>
