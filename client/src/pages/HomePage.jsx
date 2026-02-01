@@ -40,16 +40,22 @@ export default function HomePage() {
   }, [theme]);
 
   const photos = [
-    { cat: "portrait", src: "https://images.unsplash.com/photo-1512252112013-ff5f03fc2d55?q=80&w=800&auto=format&fit=crop", alt: "portrait" },
-    { cat: "family", src: "https://images.unsplash.com/photo-1604335399105-a0d4b38dff1d?q=80&w=800&auto=format&fit=crop", alt: "family" },
-    { cat: "event", src: "https://images.unsplash.com/photo-1521119989659-a83eee488004?q=80&w=800&auto=format&fit=crop", alt: "event" },
-    { cat: "portrait", src: "https://images.unsplash.com/photo-1492447273231-0f8fecec1e59?q=80&w=800&auto=format&fit=crop", alt: "portrait" },
-    { cat: "family", src: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?q=80&w=800&auto=format&fit=crop", alt: "family" },
-    { cat: "event", src: "https://images.unsplash.com/photo-1521335629791-ce4aec67dd53?q=80&w=800&auto=format&fit=crop", alt: "event" },
-    { cat: "portrait", src: "https://images.unsplash.com/photo-1509098681029-b45e9c845022?q=80&w=800&auto=format&fit=crop", alt: "portrait" },
-    { cat: "family", src: "https://images.unsplash.com/photo-1522335789203-aabd1fc54bc9?q=80&w=800&auto=format&fit=crop", alt: "family" },
-    { cat: "event", src: "https://images.unsplash.com/photo-1519741497674-611481863552?q=80&w=800&auto=format&fit=crop", alt: "event" },
-  ];
+
+  { cat: "portrait", src: "/client/image/IMG_3480.jpg", alt: "portrait" },
+  { cat: "family",   src: "/client/image/IMG_2335.jpg",   alt: "family" },
+  { cat: "event",    src: "/client/image/IMG_3611.jpg",    alt: "event" },
+
+  { cat: "portrait", src: "/client/image/IMG_3563.jpg", alt: "portrait" },
+  { cat: "family",   src: "/client/image/IMG_6737.jpg",   alt: "family" },
+  { cat: "event",    src: "/client/image/IMG_0822.jpg",    alt: "event" },
+ 
+  { cat: "portrait", src: "/client/image/IMG_2743.jpg", alt: "portrait" },
+  { cat: "family",   src: "/client/image/IMG_7066.jpg",   alt: "family" },
+  { cat: "event",    src: "/client/image/IMG_2714.jpg",    alt: "event" },
+
+
+];
+
 
   const filteredPhotos = tab === "all" ? photos : photos.filter((p) => p.cat === tab);
 
@@ -110,7 +116,7 @@ export default function HomePage() {
         return;
       }
       if (!slot.isFree) {
-        setBookMsg("❌ Цей слот вже зайнятий. Оберіть інший час.");
+        setBookMsg("❌ Цей час вже зайнятий. Оберіть інший час.");
         return;
       }
     }
