@@ -41,17 +41,17 @@ export default function HomePage() {
 
   const photos = [
 
-  { cat: "portrait", src: "/client/image/IMG_3480.jpg", alt: "portrait" },
-  { cat: "family",   src: "/client/image/IMG_2335.jpg",   alt: "family" },
-  { cat: "event",    src: "/client/image/IMG_3611.jpg",    alt: "event" },
+  { cat: "portrait", src: "/client/public/image/IMG_3480.jpg", alt: "portrait" },
+  { cat: "family",   src: "/client/public/image/IMG_2335.jpg",   alt: "family" },
+  { cat: "event",    src: "/client/public/image/IMG_3611.jpg",    alt: "event" },
 
-  { cat: "portrait", src: "/client/image/IMG_3563.jpg", alt: "portrait" },
-  { cat: "family",   src: "/client/image/IMG_6737.jpg",   alt: "family" },
-  { cat: "event",    src: "/client/image/IMG_0822.jpg",    alt: "event" },
+  { cat: "portrait", src: "/client/public/image/IMG_3563.jpg", alt: "portrait" },
+  { cat: "family",   src: "/client/public/image/IMG_6737.jpg",   alt: "family" },
+  { cat: "event",    src: "/client/public/image/IMG_0822.jpg",    alt: "event" },
  
-  { cat: "portrait", src: "/client/image/IMG_2743.jpg", alt: "portrait" },
-  { cat: "family",   src: "/client/image/IMG_7066.jpg",   alt: "family" },
-  { cat: "event",    src: "/client/image/IMG_2714.jpg",    alt: "event" },
+  { cat: "portrait", src: "/client/public/image/IMG_2743.jpg", alt: "portrait" },
+  { cat: "family",   src: "/client/public/image/IMG_7066.jpg",   alt: "family" },
+  { cat: "event",    src: "/client/public/image/IMG_2714.jpg",    alt: "event" },
 
 
 ];
