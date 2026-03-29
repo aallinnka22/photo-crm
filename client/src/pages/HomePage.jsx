@@ -118,14 +118,15 @@ export default function HomePage() {
   }
 
   // apply theme to html
-  useEffect(() => {
-    if (theme === "light") {
-      document.documentElement.classList.add("light");
-    } else {
-      document.documentElement.classList.remove("light");
-    }
-    localStorage.setItem("theme", theme);
-  }, [theme]);
+ useEffect(() => {
+  localStorage.setItem("theme", theme);
+
+  if (theme === "dark") {
+    document.documentElement.classList.add("dark");
+  } else {
+    document.documentElement.classList.remove("dark");
+  }
+}, [theme]);
 
   useEffect(() => {
     const el = retouchWrapRef.current;
