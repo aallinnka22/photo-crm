@@ -117,14 +117,18 @@ export default function HomePage() {
     });
   }
 
-  // apply theme to html
- useEffect(() => {
+useLayoutEffect(() => {
+  const root = document.documentElement;
+  const body = document.body;
+
   localStorage.setItem("theme", theme);
 
-  if (theme === "dark") {
-    document.documentElement.classList.add("dark");
+  if (theme === "light") {
+    root.classList.add("light");
+    body.classList.add("light");
   } else {
-    document.documentElement.classList.remove("dark");
+    root.classList.remove("light");
+    body.classList.remove("light");
   }
 }, [theme]);
 
