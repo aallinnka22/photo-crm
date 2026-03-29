@@ -5,10 +5,9 @@ import ChatWidget from "../components/ChatWidget";
 export default function HomePage() {
   const API_BASE = import.meta.env.VITE_API_BASE;
 
-  const [theme, setTheme] = useState(() => {
-    const saved = localStorage.getItem("theme");
-    return saved || "dark";
-  });
+ const [theme, setTheme] = useState(() => {
+  return localStorage.getItem("theme") || "dark";
+});
 
   const [tab, setTab] = useState("all");
 
@@ -120,7 +119,6 @@ export default function HomePage() {
 useEffect(() => {
   const root = document.documentElement;
 
-  document.body.classList.remove("light");
   localStorage.setItem("theme", theme);
 
   if (theme === "light") {

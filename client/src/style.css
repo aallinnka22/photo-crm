@@ -136,10 +136,10 @@ footer{ padding:40px 0 70px; color:var(--muted); border-top:1px solid var(--bord
 .light .btn{ background:#0e0f14; color:#ffffff; border-color:rgba(0,0,0,.18); box-shadow: 0 10px 26px rgba(0,0,0,.12) }
 .light .btn:hover{ transform:translateY(-1px) scale(1.03); box-shadow:0 10px 26px rgba(60,110,255,.18); border-color:rgba(60,110,255,.35) }
 /* --- FIX: коректний фон і текст у світлій темі --- */
-.light body{
-  background: #f6f7fb !important; /* світлий фон замість темного градієнта */
+html.light body{
+  background: #f6f7fb !important;
   color: var(--fg);
-  background-attachment: initial;  /* щоб не тягнуло fixed-ефект темного bg */
+  background-attachment: initial;
 }
 
 /* опційно пом'якшити декоративні шари у світлій темі */
@@ -1061,3 +1061,80 @@ img { max-width: 100%; height: auto; display: block; }
 }
 
 
+
+/* ===== FIX: mobile booking date/time block overflow ===== */
+@media (max-width: 720px) {
+  .booking,
+  .booking * {
+    min-width: 0;
+    box-sizing: border-box;
+  }
+
+  .booking .calendar,
+  .booking .slots,
+  .booking .card {
+    width: 100%;
+    max-width: 100%;
+    overflow: hidden;
+  }
+
+  .booking .slots {
+    padding: 14px !important;
+    border-radius: 20px;
+  }
+
+  .booking .input,
+  .booking select,
+  .booking input[type="date"],
+  .booking input[type="time"] {
+    display: block;
+    width: 100% !important;
+    max-width: 100% !important;
+  }
+
+  .booking .row {
+    grid-template-columns: 1fr !important;
+    gap: 10px !important;
+  }
+}
+
+/* ===== FIX: date/time inputs do not stick out ===== */
+.booking input[type="date"].input,
+.booking input[type="time"].input {
+  appearance: none;
+  -webkit-appearance: none;
+  width: 100%;
+  max-width: 100%;
+}
+
+
+/* ===== FIX: booking inner blocks ===== */
+.booking .slots,
+.booking .calendar {
+  box-sizing: border-box;
+  max-width: 100%;
+}
+
+/* ===== Reviews buttons mobile fix ===== */
+@media (max-width: 720px) {
+  .reviews-actions {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 10px;
+    margin: 14px 0 18px;
+  }
+
+  .reviews-actions .btn {
+    width: 100%;
+    min-width: 0;
+    justify-content: center;
+    padding: 12px 14px;
+  }
+
+  .reviews-actions .btn.secondary {
+    background: #f2f4f7;
+    color: #0b0c10;
+    border: 1px solid rgba(0,0,0,.12);
+    box-shadow: none;
+  }
+}
