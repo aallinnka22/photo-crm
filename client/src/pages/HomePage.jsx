@@ -4,9 +4,7 @@ import ChatWidget from "../components/ChatWidget";
 
 export default function HomePage() {
   const API_BASE = useMemo(() => {
-    // Має збігатися з client/src/api.js: VITE_API_BASE=http://localhost:5001/api
-    // Якщо тут не знайде — fallback.
-    return import.meta.env.VITE_API_BASE || "http://localhost:5001/api";
+    return import.meta.env.VITE_API_BASE || (import.meta.env.DEV ? "http://localhost:5001/api" : "");
   }, []);
 
   const [theme, setTheme] = useState(() => {
