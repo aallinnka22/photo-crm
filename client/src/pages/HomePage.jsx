@@ -119,16 +119,14 @@ export default function HomePage() {
 
 useEffect(() => {
   const root = document.documentElement;
-  const body = document.body;
 
+  document.body.classList.remove("light");
   localStorage.setItem("theme", theme);
 
   if (theme === "light") {
     root.classList.add("light");
-    body.classList.add("light");
   } else {
     root.classList.remove("light");
-    body.classList.remove("light");
   }
 }, [theme]);
 
