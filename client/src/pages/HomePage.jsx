@@ -117,7 +117,7 @@ export default function HomePage() {
     });
   }
 
-useLayoutEffect(() => {
+useEffect(() => {
   const root = document.documentElement;
   const body = document.body;
 
