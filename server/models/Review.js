@@ -13,6 +13,9 @@ const ReviewSchema = new mongoose.Schema(
     // ✅ ADDED: що сподобалось (можна обрати декілька)
     features: { type: [String], default: [] },
 
+    // ✅ ADDED: фото до відгуку
+    photoUrl: { type: String, default: "" },
+
     status: { type: String, enum: ["pending", "approved", "rejected"], default: "pending" },
   },
   { timestamps: true }
