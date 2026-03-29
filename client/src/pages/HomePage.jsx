@@ -3,9 +3,7 @@ import { Link } from "react-router-dom";
 import ChatWidget from "../components/ChatWidget";
 
 export default function HomePage() {
-  const API_BASE = useMemo(() => {
-    return import.meta.env.VITE_API_BASE || (import.meta.env.DEV ? "http://localhost:5001/api" : "");
-  }, []);
+  const API_BASE = import.meta.env.VITE_API_BASE || (import.meta.env.DEV ? "http://localhost:5001/api" : "");
 
   const [theme, setTheme] = useState(() => {
     const saved = localStorage.getItem("theme");
