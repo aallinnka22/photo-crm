@@ -10,25 +10,25 @@ const galleryRoutes = require("./routes/galleryRoutes");
 const adminRoutes = require("./routes/adminRoutes");
 const chatRoutes = require("./routes/chatRoutes");
 const reviewRoutes = require("./routes/reviewRoutes");
+
 const app = express();
 
 /* =========================
    CORS (Vercel + Render)
    ========================= */
 const allowedOrigins = [
-  process.env.FRONTEND_URL,          // production frontend (Vercel)
-  "http://localhost:5173",            // local Vite
+  process.env.FRONTEND_URL,
+  "http://localhost:5173",
 ].filter(Boolean);
 
 app.use(
   cors({
     origin: (origin, callback) => {
-      // дозволяємо запити без origin (Postman, curl)
       if (!origin) return callback(null, true);
 
       const isAllowed =
         allowedOrigins.includes(origin) ||
-        origin.endsWith(".vercel.app"); // всі preview деплої Vercel
+        origin.endsWith(".vercel.app");
 
       if (isAllowed) return callback(null, true);
 
@@ -36,7 +36,7 @@ app.use(
     },
     methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
     allowedHeaders: ["Content-Type", "Authorization"],
-    credentials: false, // ❗ у тебе Bearer token, cookies НЕ використовуються
+    credentials: false,
   })
 );
 
@@ -68,10 +68,9 @@ app.use("/api/galleries", galleryRoutes);
 app.use("/api/admin", adminRoutes);
 app.use("/api/chat", chatRoutes);
 app.use("/api/reviews", reviewRoutes);
+
 /* =========================
    Static (НЕ обовʼязково)
-   Render не віддає фронт,
-   фронт у тебе на Vercel
    ========================= */
 const STATIC_DIR = path.join(__dirname, "..", "site");
 const indexPath = path.join(STATIC_DIR, "index.html");

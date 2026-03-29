@@ -3,11 +3,11 @@ import { Link } from "react-router-dom";
 import ChatWidget from "../components/ChatWidget";
 
 export default function HomePage() {
-  const API_BASE = import.meta.env.VITE_API_BASE;
+  const API_BASE = import.meta.env.VITE_API_BASE || "http://localhost:5001/api";
 
- const [theme, setTheme] = useState(() => {
-  return localStorage.getItem("theme") || "dark";
-});
+  const [theme, setTheme] = useState(() => {
+    return localStorage.getItem("theme") || "dark";
+  });
 
   const [tab, setTab] = useState("all");
 
@@ -94,6 +94,10 @@ export default function HomePage() {
   const [reviewMsg, setReviewMsg] = useState("");
   const [reviewLoading, setReviewLoading] = useState(false);
 
+  // ✅ ADDED: photo for review
+  const [reviewPhotoFile, setReviewPhotoFile] = useState(null);
+  const [reviewPhotoPreview, setReviewPhotoPreview] = useState("");
+
   // ✅ REVIEWS FORM: тип зйомки (ADDED)
   const SHOOT_TYPES = useMemo(
     () => ["Портрет", "Сімейна", "Лавсторі", "Події", "Весілля", "Вінчання/Хрестини", "Інше"],
@@ -116,17 +120,17 @@ export default function HomePage() {
     });
   }
 
-useEffect(() => {
-  const root = document.documentElement;
+  useEffect(() => {
+    const root = document.documentElement;
 
-  localStorage.setItem("theme", theme);
+    localStorage.setItem("theme", theme);
 
-  if (theme === "light") {
-    root.classList.add("light");
-  } else {
-    root.classList.remove("light");
-  }
-}, [theme]);
+    if (theme === "light") {
+      root.classList.add("light");
+    } else {
+      root.classList.remove("light");
+    }
+  }, [theme]);
 
   useEffect(() => {
     const el = retouchWrapRef.current;
@@ -164,11 +168,10 @@ useEffect(() => {
           _id: it?._id,
           name: it?.name || "Клієнт",
           tag: "Відгук",
-          // ✅ Тип зйомки (ADDED) — підхоплюємо з різних можливих назв поля
           shootType: it?.shootType || it?.shootingType || it?.sessionType || it?.type || "",
           text: it?.text || "",
           rating: Number(it?.rating || 5),
-          // якщо на бекенді буде поле features/tags — покажемо чіпси
+          photoUrl: it?.photoUrl || "",
           pills: Array.isArray(it?.features)
             ? it.features
             : Array.isArray(it?.tags)
@@ -193,13 +196,11 @@ useEffect(() => {
   // ✅ Use DB reviews if exist, otherwise fallback static
   const allReviews = dbReviews?.length ? dbReviews : reviews;
 
-  // keep revIndex valid if reviews count changed
   useEffect(() => {
     const len = allReviews?.length || 0;
     if (!len) return;
     if (revIndex > len - 1) setRevIndex(0);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [allReviews?.length]);
+  }, [allReviews?.length, revIndex]);
 
   // ✅ REVIEWS: auto-advance
   useEffect(() => {
@@ -296,7 +297,6 @@ useEffect(() => {
 
   useEffect(() => {
     loadSlots(date);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [date]);
 
   async function submitBooking() {
@@ -347,7 +347,7 @@ useEffect(() => {
     }
   }
 
-  // ✅ REVIEWS FORM submit: відправка відгуку в БД (узгоджено з твоїм reviewRoutes.js)
+  // ✅ REVIEWS FORM submit: відправка відгуку в БД + optional photo
   async function submitReview() {
     setReviewMsg("");
 
@@ -364,32 +364,42 @@ useEffect(() => {
       return;
     }
 
+    if (reviewPhotoFile && reviewPhotoFile.size > 5 * 1024 * 1024) {
+      setReviewMsg("❌ Фото має бути до 5 МБ.");
+      return;
+    }
+
     setReviewLoading(true);
     try {
+      const formData = new FormData();
+      formData.append("name", nm);
+      formData.append("rating", String(rt));
+      formData.append("text", tx);
+      formData.append("contact", "");
+      formData.append("website", "");
+      formData.append("features", JSON.stringify(reviewFeatures));
+      formData.append("shootType", reviewShootType);
+
+      if (reviewPhotoFile) {
+        formData.append("photo", reviewPhotoFile);
+      }
+
       const res = await fetch(`${API_BASE}/reviews`, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          name: nm,
-          rating: rt,
-          text: tx,
-          contact: "",
-          website: "", // honeypot must be empty
-          features: reviewFeatures, // ⚠️ збережеться тільки якщо в Review model є це поле
-          shootType: reviewShootType, // ✅ ADDED
-        }),
+        body: formData,
       });
 
       const data = await res.json().catch(() => ({}));
       if (!res.ok) throw new Error(data?.message || "Помилка відправки відгуку");
 
-      // важливо: у тебе на бекенді відгук стане pending, тому на головній не з'явиться до approved
       setReviewMsg(data?.message || "Дякую! Відгук відправлено ☺️");
       setReviewName("");
       setReviewRating(5);
       setReviewText("");
       setReviewFeatures(["Комфорт", "Підказки", "Природна ретуш"]);
-      setReviewShootType(SHOOT_TYPES[0]); // ✅ ADDED
+      setReviewShootType(SHOOT_TYPES[0]);
+      setReviewPhotoFile(null);
+      setReviewPhotoPreview("");
     } catch (e) {
       setReviewMsg("❌ " + (e?.message || "Помилка"));
     } finally {
@@ -397,10 +407,8 @@ useEffect(() => {
     }
   }
 
-  // ✅ REVIEWS helpers
   const safeMod = (n, m) => ((n % m) + m) % m;
 
-  // ✅ FIX duplicates: show 1/2/3 cards depending on count
   const visibleReviews = (() => {
     const len = allReviews?.length || 0;
     if (!len) return [];
@@ -500,12 +508,11 @@ useEffect(() => {
       </header>
 
       <main className="container">
-        {/* HERO */}
         <section className="hero" id="top">
           <div>
             <h2 className="title">Light, emotion, precision.</h2>
             <p className="lead">
-             Я – Аліна, фотограф. Люблю знімати людей, емоції та моменти, які хочеться пам’ятати.
+              Я – Аліна, фотограф. Люблю знімати людей, емоції та моменти, які хочеться пам’ятати.
             </p>
 
             <div className="cta-row">
@@ -527,8 +534,6 @@ useEffect(() => {
                 Послуги та ціни
               </button>
             </div>
-
-  
           </div>
 
           <div className="hero-photo">
@@ -536,14 +541,13 @@ useEffect(() => {
           </div>
         </section>
 
-        {/* ABOUT */}
         <section id="about">
           <h3 className="section-title">Про мене</h3>
           <div className="grid cols-2">
             <div className="card">
               <p className="muted">
-               Під час зйомки допомагаю з позуванням, підбором локацій та образів, щоб ви почувалися легко й природно перед камерою. 
-               Атмосфера на зйомці завжди спокійна й невимушена, тому люди швидко забувають про хвилювання. У кадрі для мене важливі справжні емоції, атмосфера моменту та деталі, які роблять фотографії живими.
+                Під час зйомки допомагаю з позуванням, підбором локацій та образів, щоб ви почувалися легко й природно перед камерою.
+                Атмосфера на зйомці завжди спокійна й невимушена, тому люди швидко забувають про хвилювання. У кадрі для мене важливі справжні емоції, атмосфера моменту та деталі, які роблять фотографії живими.
               </p>
               <div className="chips">
                 <span className="chip">Портрет</span>
@@ -559,245 +563,269 @@ useEffect(() => {
                 <li>Швидка онлайн-заявка на бронювання.</li>
                 <li>Приватні галереї з доступом за кодом.</li>
                 <li>Збір вибору фото на ретуш (у кабінеті клієнта).</li>
-          
               </ul>
             </div>
           </div>
         </section>
 
-        {/* ✅ REVIEWS */}
-        <section id="reviews" ref={reviewsWrapRef}>
-          <div className="reviews-head">
-            <div>
-              <h3 className="section-title" style={{ marginBottom: 6 }}>
-                Відгуки клієнтів
-              </h3>
-              <div className="muted" style={{ fontSize: 14 }}>
-                {dbReviewsLoading ? <span style={{ marginLeft: 8 }}>• Завантажую…</span> : null}
-              </div>
-            </div>
+       <section id="reviews" ref={reviewsWrapRef}>
+  <div className="reviews-head">
+    <div>
+      <h3 className="section-title" style={{ marginBottom: 6 }}>
+        Відгуки клієнтів
+      </h3>
+      <div className="muted" style={{ fontSize: 14 }}>
+        {dbReviewsLoading ? <span style={{ marginLeft: 8 }}>• Завантажую…</span> : null}
+      </div>
+    </div>
 
-            <div className="reviews-actions">
-             
-              <button className="btn" type="button" onClick={() => scrollToId("leave-review")} title="Залишити відгук">
-                Залишити відгук
-              </button>
-              <button className="btn" type="button" onClick={() => scrollToId("booking")} title="Записатися">
-                Записатися
-              </button>
-            </div>
+    <div className="reviews-actions">
+      <button className="btn" type="button" onClick={() => scrollToId("leave-review")} title="Залишити відгук">
+        Залишити відгук
+      </button>
+      <button className="btn" type="button" onClick={() => scrollToId("booking")} title="Записатися">
+        Записатися
+      </button>
+    </div>
+  </div>
+
+  <div
+    className={`reviews-grid ${reviewsInView ? "rev-in" : ""}`}
+    onMouseEnter={() => setRevPaused(true)}
+    onMouseLeave={() => setRevPaused(false)}
+    style={{ marginTop: 14 }}
+  >
+    {visibleReviews.map((r, idx) => (
+      <div className="card review-card" key={`${r?._id || "local"}-${revIndex}-${idx}`}>
+        <div className="review-top">
+       {r?.photoUrl ? (
+  <img
+    src={r.photoUrl}
+    alt={r?.name || "Клієнт"}
+    style={{
+      width: 42,
+      height: 42,
+      minWidth: 42,
+      minHeight: 42,
+      maxWidth: 42,
+      maxHeight: 42,
+      borderRadius: "999px",
+      objectFit: "cover",
+      display: "block",
+      flex: "0 0 42px",
+      overflow: "hidden",
+      border: "1px solid rgba(255,255,255,0.14)",
+    }}
+  />
+) : (
+  <div className="review-avatar" aria-hidden="true">
+    {initials(r?.name)}
+  </div>
+)}
+
+          <div style={{ minWidth: 0 }}>
+            <div className="review-name">{r?.name}</div>
+            <div className="muted review-tag">{r?.tag || "Відгук"}</div>
+
+            {r?.shootType ? (
+              <div className="muted review-tag" style={{ marginTop: 4 }}>
+                Тип зйомки: <b>{r.shootType}</b>
+              </div>
+            ) : null}
           </div>
 
-          <div
-            className={`reviews-grid ${reviewsInView ? "rev-in" : ""}`}
-            onMouseEnter={() => setRevPaused(true)}
-            onMouseLeave={() => setRevPaused(false)}
-            style={{ marginTop: 14 }}
-          >
-            {visibleReviews.map((r, idx) => (
-              <div className="card review-card" key={`${r?._id || "local"}-${revIndex}-${idx}`}>
-                <div className="review-top">
-                  <div className="review-avatar" aria-hidden="true">
-                    {initials(r?.name)}
-                  </div>
-                  <div style={{ minWidth: 0 }}>
-                    <div className="review-name">{r?.name}</div>
-                    <div className="muted review-tag">{r?.tag || "Відгук"}</div>
-
-                    {/* ✅ Тип зйомки (ADDED) */}
-                    {r?.shootType ? (
-                      <div className="muted review-tag" style={{ marginTop: 4 }}>
-                        Тип зйомки: <b>{r.shootType}</b>
-                      </div>
-                    ) : null}
-                  </div>
-
-                  <div className="review-stars" aria-label={`Оцінка: ${r?.rating || 5} з 5`}>
-                    {Array.from({ length: 5 }).map((_, sIdx) => (
-                      <span key={sIdx} className={`star ${sIdx < (r?.rating || 5) ? "on" : ""}`} aria-hidden="true">
-                        ★
-                      </span>
-                    ))}
-                  </div>
-                </div>
-
-                <p className="muted review-text">{r?.text}</p>
-
-                <div className="review-bottom">
-                  {/* ✅ FIX: показуємо весь список без slice(0,6) */}
-                  {(Array.isArray(r?.pills) ? r.pills : []).map((p, pIdx) => (
-                    <span className="pill" key={`${p}-${pIdx}`}>
-                      ✓ {p}
-                    </span>
-                  ))}
-                </div>
-              </div>
+          <div className="review-stars" aria-label={`Оцінка: ${r?.rating || 5} з 5`}>
+            {Array.from({ length: 5 }).map((_, sIdx) => (
+              <span key={sIdx} className={`star ${sIdx < (r?.rating || 5) ? "on" : ""}`} aria-hidden="true">
+                ★
+              </span>
             ))}
           </div>
+        </div>
 
-          <div className="reviews-dots" style={{ marginTop: 12 }}>
-            {allReviews.map((_, i) => (
-              <button
-                key={i}
-                type="button"
-                className={`dot ${i === revIndex ? "active" : ""}`}
-                onClick={() => setRevIndex(i)}
-                aria-label={`Показати відгук ${i + 1}`}
-                onMouseEnter={() => setRevPaused(true)}
-                onMouseLeave={() => setRevPaused(false)}
-              />
-            ))}
-          </div>
+        <p className="muted review-text">{r?.text}</p>
 
-          <style>{`
-            .reviews-head{
-              display:flex;
-              align-items:flex-end;
-              justify-content:space-between;
-              gap:14px;
-              flex-wrap:wrap;
-              margin-top: 6px;
-            }
-            .reviews-actions{
-              display:flex;
-              gap:10px;
-              flex-wrap:wrap;
-              align-items:center;
-            }
-            .reviews-grid{
-              display:grid;
-              grid-template-columns: repeat(3, minmax(0, 1fr));
-              gap:14px;
-            }
-            @media (max-width: 980px){
-              .reviews-grid{ grid-template-columns: 1fr; }
-            }
+        <div className="review-bottom">
+          {(Array.isArray(r?.pills) ? r.pills : []).map((p, pIdx) => (
+            <span className="pill" key={`${p}-${pIdx}`}>
+              ✓ {p}
+            </span>
+          ))}
+        </div>
+      </div>
+    ))}
+  </div>
 
-            .review-card{
-              position:relative;
-              overflow:hidden;
-              transform: translateY(6px);
-              opacity: 0.92;
-              transition: transform .28s ease, opacity .28s ease;
-              background: rgba(0,0,0,0.18);
-              border: 1px solid rgba(255,255,255,0.10);
-            }
-            .rev-in .review-card{
-              animation: revPop .45s ease both;
-            }
-            .rev-in .review-card:nth-child(2){ animation-delay: .06s; }
-            .rev-in .review-card:nth-child(3){ animation-delay: .12s; }
+  <div className="reviews-dots" style={{ marginTop: 12 }}>
+    {allReviews.map((_, i) => (
+      <button
+        key={i}
+        type="button"
+        className={`dot ${i === revIndex ? "active" : ""}`}
+        onClick={() => setRevIndex(i)}
+        aria-label={`Показати відгук ${i + 1}`}
+        onMouseEnter={() => setRevPaused(true)}
+        onMouseLeave={() => setRevPaused(false)}
+      />
+    ))}
+  </div>
 
-            @keyframes revPop{
-              from { transform: translateY(10px); opacity: 0.0; }
-              to   { transform: translateY(0px);  opacity: 1.0; }
-            }
+  <style>{`
+    .reviews-head{
+      display:flex;
+      align-items:flex-end;
+      justify-content:space-between;
+      gap:14px;
+      flex-wrap:wrap;
+      margin-top: 6px;
+    }
+    .reviews-actions{
+      display:flex;
+      gap:10px;
+      flex-wrap:wrap;
+      align-items:center;
+    }
+    .reviews-grid{
+      display:grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap:14px;
+    }
+    @media (max-width: 980px){
+      .reviews-grid{ grid-template-columns: 1fr; }
+    }
 
-            .review-card:hover{
-              transform: translateY(-2px);
-              opacity: 1;
-            }
+    .review-card{
+      position:relative;
+      overflow:hidden;
+      transform: translateY(6px);
+      opacity: 0.92;
+      transition: transform .28s ease, opacity .28s ease;
+      background: rgba(0,0,0,0.18);
+      border: 1px solid rgba(255,255,255,0.10);
+    }
+    .rev-in .review-card{
+      animation: revPop .45s ease both;
+    }
+    .rev-in .review-card:nth-child(2){ animation-delay: .06s; }
+    .rev-in .review-card:nth-child(3){ animation-delay: .12s; }
 
-            .review-top{
-              display:flex;
-              gap:12px;
-              align-items:center;
-              justify-content:space-between;
-              margin-bottom: 10px;
-            }
-            .review-avatar{
-              width:42px;
-              height:42px;
-              border-radius: 999px;
-              display:grid;
-              place-items:center;
-              font-weight: 700;
-              letter-spacing: 0.4px;
-              background: rgba(255,255,255,0.10);
-              border: 1px solid rgba(255,255,255,0.14);
-              flex: 0 0 auto;
-            }
-            .review-name{
-              font-weight: 700;
-              line-height: 1.2;
-              white-space: nowrap;
-              overflow: hidden;
-              text-overflow: ellipsis;
-              max-width: 240px;
-            }
-            .review-tag{
-              font-size: 12px;
-              opacity: 0.85;
-              white-space: nowrap;
-              overflow: hidden;
-              text-overflow: ellipsis;
-              max-width: 260px;
-            }
-            .review-stars{
-              display:flex;
-              gap:2px;
-              flex: 0 0 auto;
-              margin-left: 10px;
-              opacity: .95;
-            }
-            .star{
-              font-size: 14px;
-              opacity: .35;
-              transform: translateY(-1px);
-            }
-            .star.on{
-              opacity: 1;
-              text-shadow: 0 0 18px rgba(255,255,255,0.20);
-            }
-            .review-text{
-              margin: 0;
-              font-size: 14px;
-              line-height: 1.55;
-            }
-            .review-bottom{
-              display:flex;
-              gap:8px;
-              flex-wrap:wrap;
-              margin-top: 12px;
-            }
-            .pill{
-              font-size: 12px;
-              padding: 6px 10px;
-              border-radius: 999px;
-              border: 1px solid rgba(255,255,255,0.12);
-              background: rgba(0,0,0,0.22);
-              opacity: 0.9;
-            }
+    @keyframes revPop{
+      from { transform: translateY(10px); opacity: 0.0; }
+      to   { transform: translateY(0px);  opacity: 1.0; }
+    }
 
-            .reviews-dots{
-              display:flex;
-              gap:8px;
-              justify-content:center;
-              align-items:center;
-              flex-wrap:wrap;
-              user-select:none;
-            }
-            .dot{
-              width: 10px;
-              height: 10px;
-              border-radius: 999px;
-              border: 1px solid rgba(255,255,255,0.22);
-              background: rgba(255,255,255,0.08);
-              cursor:pointer;
-              transition: transform .18s ease, opacity .18s ease, width .18s ease;
-              opacity: .75;
-            }
-            .dot:hover{ transform: scale(1.12); opacity: 1; }
-            .dot.active{
-              width: 26px;
-              opacity: 1;
-              background: rgba(255,255,255,0.22);
-              border-color: rgba(255,255,255,0.30);
-            }
-          `}</style>
-        </section>
+    .review-card:hover{
+      transform: translateY(-2px);
+      opacity: 1;
+    }
 
-        {/* PORTFOLIO */}
+    .review-top{
+      display:flex;
+      gap:12px;
+      align-items:center;
+      margin-bottom: 10px;
+    }
+    .review-avatar{
+      width:42px;
+      height:42px;
+      border-radius: 999px;
+      display:grid;
+      place-items:center;
+      font-weight: 700;
+      letter-spacing: 0.4px;
+      background: rgba(255,255,255,0.10);
+      border: 1px solid rgba(255,255,255,0.14);
+      flex: 0 0 auto;
+    }
+    .review-avatar-photo{
+      width:42px;
+      height:42px;
+      border-radius:999px;
+      object-fit:cover;
+      display:block;
+      border: 1px solid rgba(255,255,255,0.14);
+      flex: 0 0 auto;
+    }
+    .review-name{
+      font-weight: 700;
+      line-height: 1.2;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      max-width: 240px;
+    }
+    .review-tag{
+      font-size: 12px;
+      opacity: 0.85;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      max-width: 260px;
+    }
+    .review-stars{
+      display:flex;
+      gap:2px;
+      flex: 0 0 auto;
+      margin-left: auto;
+      opacity: .95;
+    }
+    .star{
+      font-size: 14px;
+      opacity: .35;
+      transform: translateY(-1px);
+    }
+    .star.on{
+      opacity: 1;
+      text-shadow: 0 0 18px rgba(255,255,255,0.20);
+    }
+    .review-text{
+      margin: 0;
+      font-size: 14px;
+      line-height: 1.55;
+    }
+    .review-bottom{
+      display:flex;
+      gap:8px;
+      flex-wrap:wrap;
+      margin-top: 12px;
+    }
+    .pill{
+      font-size: 12px;
+      padding: 6px 10px;
+      border-radius: 999px;
+      border: 1px solid rgba(255,255,255,0.12);
+      background: rgba(0,0,0,0.22);
+      opacity: 0.9;
+    }
+
+    .reviews-dots{
+      display:flex;
+      gap:8px;
+      justify-content:center;
+      align-items:center;
+      flex-wrap:wrap;
+      user-select:none;
+    }
+    .dot{
+      width: 10px;
+      height: 10px;
+      border-radius: 999px;
+      border: 1px solid rgba(255,255,255,0.22);
+      background: rgba(255,255,255,0.08);
+      cursor:pointer;
+      transition: transform .18s ease, opacity .18s ease, width .18s ease;
+      opacity: .75;
+    }
+    .dot:hover{ transform: scale(1.12); opacity: 1; }
+    .dot.active{
+      width: 26px;
+      opacity: 1;
+      background: rgba(255,255,255,0.22);
+      border-color: rgba(255,255,255,0.30);
+    }
+  `}</style>
+</section>
+
         <section id="portfolio">
           <h3 className="section-title">Портфоліо</h3>
 
@@ -825,7 +853,6 @@ useEffect(() => {
           </div>
         </section>
 
-        {/* SERVICES */}
         <section id="services">
           <h3 className="section-title">Послуги та ціни</h3>
 
@@ -836,8 +863,7 @@ useEffect(() => {
                 <span className="num">750</span>
                 <span className="u">грн</span>
               </div>
-              <p className="muted">  40 фото у ретуші. Надаю можливість особисто відібрати фотографії на ретуш
-              </p>
+              <p className="muted">40 фото у ретуші. Надаю можливість особисто відібрати фотографії на ретуш</p>
               <button
                 className="btn"
                 type="button"
@@ -940,7 +966,6 @@ useEffect(() => {
           </div>
         </section>
 
-        {/* BOOKING */}
         <section id="booking">
           <h3 className="section-title">Онлайн-запис</h3>
 
@@ -1009,8 +1034,6 @@ useEffect(() => {
                     ) : null}
                   </div>
                 </div>
-
-                
               </div>
             </div>
 
@@ -1059,7 +1082,6 @@ useEffect(() => {
           </div>
         </section>
 
-        {/* CLIENT */}
         <section id="client">
           <h3 className="section-title">Кабінет клієнта</h3>
 
@@ -1067,12 +1089,12 @@ useEffect(() => {
             <div className="card">
               <h4>Приватна галерея</h4>
               <p className="muted">
-                Вхід у приватну галерею відбувається <b>тільки за кодом</b>.  
+                Вхід у приватну галерею відбувається <b>тільки за кодом</b>.
               </p>
               <Link className="btn" to="/client">
                 Перейти в кабінет
               </Link>
-               <hr className="sep" />
+              <hr className="sep" />
               <p className="muted" style={{ marginTop: 8, fontSize: 12 }}>
                 Код доступу видаю після зйомки.
               </p>
@@ -1085,15 +1107,10 @@ useEffect(() => {
                 <li>Поставте лайк і, за бажанням, напишіть коментар, під час вибору фотографій на ретуш .</li>
                 <li>Зручне завантаження фотографій, ви можете завантажити однією кнопкою всі фото.</li>
               </ul>
-             
-             
             </div>
           </div>
         </section>
 
-    
-
-        {/* RETOUCH */}
         <section id="retouch">
           <h3 className="section-title">Ретуш: до / після</h3>
 
@@ -1111,8 +1128,6 @@ useEffect(() => {
                 <li>Локальні правки (очі/волосся/деталі)</li>
               </ul>
 
-
-              
               <a
                 className="btn"
                 href="https://instagram.com/ashch.phh"
@@ -1120,7 +1135,7 @@ useEffect(() => {
                 rel="noopener noreferrer"
                 title="Instagram"
               >
-                Звʼязатись зі мною 
+                Звʼязатись зі мною
               </a>
             </div>
 
@@ -1145,7 +1160,6 @@ useEffect(() => {
                   background: "rgba(0,0,0,0.25)",
                 }}
               >
-                {/* BEFORE */}
                 <img
                   src="/images/після 5.jpg"
                   alt="До ретуші"
@@ -1160,7 +1174,6 @@ useEffect(() => {
                   }}
                 />
 
-                {/* AFTER (clipped) */}
                 <div
                   className="ba-after"
                   style={{
@@ -1184,7 +1197,6 @@ useEffect(() => {
                   />
                 </div>
 
-                {/* Divider + Handle */}
                 <div
                   className="ba-divider"
                   style={{
@@ -1225,7 +1237,6 @@ useEffect(() => {
                   </div>
                 </div>
 
-                {/* Labels */}
                 <div
                   style={{
                     position: "absolute",
@@ -1284,121 +1295,169 @@ useEffect(() => {
               <div className="muted" style={{ marginTop: 10, fontSize: 12 }}></div>
             </div>
           </div>
-</section>
+        </section>
 
-{/* ✅ FORM: Leave review */}
-<section id="leave-review" className="leave-review-wrap">
-  <h3 className="section-title leave-review-title">Залишити відгук</h3>
+        <section id="leave-review" className="leave-review-wrap">
+          <h3 className="section-title leave-review-title">Залишити відгук</h3>
 
-  <div className="leave-review-center">
-    <div className="card leave-review-card">
-      <p className="muted leave-review-intro">
-        Якщо вам сподобалась зйомка, напишіть короткий відгук. Це дуже допомагає ❤️
-      </p>
+          <div className="leave-review-center">
+            <div className="card leave-review-card">
+              <p className="muted leave-review-intro">
+                Якщо вам сподобалась зйомка, напишіть короткий відгук. Це дуже допомагає ❤️
+              </p>
 
-      <div className="leave-review-stack">
-        <div className="leave-review-grid-top">
-          <div className="leave-review-field leave-review-field-name">
-            <label className="muted label">Імʼя</label>
-            <input
-              className="input"
-              placeholder="Ваше імʼя"
-              value={reviewName}
-              onChange={(e) => setReviewName(e.target.value)}
-            />
-          </div>
+              <div className="leave-review-stack">
+                <div className="leave-review-grid-top">
+                  <div className="leave-review-field leave-review-field-name">
+                    <label className="muted label">Імʼя</label>
+                    <input
+                      className="input"
+                      placeholder="Ваше імʼя"
+                      value={reviewName}
+                      onChange={(e) => setReviewName(e.target.value)}
+                    />
+                  </div>
 
-          <div className="leave-review-field">
-            <label className="muted label">Оцінка</label>
+                  <div className="leave-review-field">
+                    <label className="muted label">Оцінка</label>
 
-            <div className="leave-review-rating-row">
-              {Array.from({ length: 5 }).map((_, i) => {
-                const val = i + 1;
-                const on = val <= reviewRating;
+                    <div className="leave-review-rating-row">
+                      {Array.from({ length: 5 }).map((_, i) => {
+                        const val = i + 1;
+                        const on = val <= reviewRating;
 
-                return (
-                  <button
-                    key={val}
-                    type="button"
-                    className={`btn leave-review-star ${on ? "is-active" : ""}`}
-                    onClick={() => setReviewRating(val)}
-                    title={`${val} з 5`}
-                  >
-                    {on ? "★" : "☆"}
-                  </button>
-                );
-              })}
+                        return (
+                          <button
+                            key={val}
+                            type="button"
+                            className={`btn leave-review-star ${on ? "is-active" : ""}`}
+                            onClick={() => setReviewRating(val)}
+                            title={`${val} з 5`}
+                          >
+                            {on ? "★" : "☆"}
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </div>
+
+                  <div className="leave-review-field leave-review-field-type">
+                    <label className="muted label">Тип зйомки</label>
+                    <select
+                      className="input leave-review-select-short"
+                      value={reviewShootType}
+                      onChange={(e) => setReviewShootType(e.target.value)}
+                    >
+                      {SHOOT_TYPES.map((t) => (
+                        <option key={t} value={t}>
+                          {t}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                </div>
+
+                <div className="leave-review-field">
+                  <label className="muted label">Що сподобалось (можна обрати декілька)</label>
+
+                  <div className="leave-review-features">
+                    {FEATURE_OPTIONS.map((opt) => {
+                      const on = reviewFeatures.includes(opt);
+
+                      return (
+                        <button
+                          key={opt}
+                          type="button"
+                          className={`btn leave-review-chip ${on ? "is-active" : ""}`}
+                          onClick={() => toggleFeature(opt)}
+                          title={opt}
+                        >
+                          {on ? "✓ " : ""}
+                          {opt}
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+
+                <div className="leave-review-field">
+                  <label className="muted label">Фото (необов’язково)</label>
+                  <input
+                    className="input"
+                    type="file"
+                    accept="image/jpeg,image/png,image/webp"
+                    onChange={(e) => {
+                      const file = e.target.files?.[0];
+                      if (!file) return;
+
+                      if (!["image/jpeg", "image/png", "image/webp"].includes(file.type)) {
+                        setReviewMsg("❌ Дозволені тільки JPG, PNG, WEBP.");
+                        return;
+                      }
+
+                      if (file.size > 5 * 1024 * 1024) {
+                        setReviewMsg("❌ Фото має бути до 5 МБ.");
+                        return;
+                      }
+
+                      setReviewMsg("");
+                      setReviewPhotoFile(file);
+                      setReviewPhotoPreview(URL.createObjectURL(file));
+                    }}
+                  />
+
+                  {reviewPhotoPreview ? (
+                    <div style={{ marginTop: 10 }}>
+                      <img
+                        src={reviewPhotoPreview}
+                        alt="Попередній перегляд"
+                        style={{
+                          width: "100%",
+                          maxHeight: 260,
+                          objectFit: "cover",
+                          borderRadius: 16,
+                          display: "block",
+                        }}
+                      />
+                      <button
+                        className="btn"
+                        type="button"
+                        style={{ marginTop: 10 }}
+                        onClick={() => {
+                          setReviewPhotoFile(null);
+                          setReviewPhotoPreview("");
+                        }}
+                      >
+                        Прибрати фото
+                      </button>
+                    </div>
+                  ) : null}
+                </div>
+
+                <div className="leave-review-field">
+                  <textarea
+                    className="input leave-review-textarea"
+                    placeholder="Напишіть кілька речень..."
+                    value={reviewText}
+                    onChange={(e) => setReviewText(e.target.value)}
+                    rows={5}
+                  />
+                </div>
+
+                <button
+                  className="btn leave-review-submit"
+                  type="button"
+                  onClick={submitReview}
+                  disabled={reviewLoading}
+                >
+                  {reviewLoading ? "Надсилаю..." : "Надіслати відгук"}
+                </button>
+
+                {reviewMsg ? <p className="muted leave-review-message">{reviewMsg}</p> : null}
+              </div>
             </div>
           </div>
-
-          <div className="leave-review-field leave-review-field-type">
-            <label className="muted label">Тип зйомки</label>
-            <select
-              className="input leave-review-select-short"
-              value={reviewShootType}
-              onChange={(e) => setReviewShootType(e.target.value)}
-            >
-              {SHOOT_TYPES.map((t) => (
-                <option key={t} value={t}>
-                  {t}
-                </option>
-              ))}
-            </select>
-          </div>
-        </div>
-
-        <div className="leave-review-field">
-          <label className="muted label">Що сподобалось (можна обрати декілька)</label>
-
-          <div className="leave-review-features">
-            {FEATURE_OPTIONS.map((opt) => {
-              const on = reviewFeatures.includes(opt);
-
-              return (
-                <button
-                  key={opt}
-                  type="button"
-                  className={`btn leave-review-chip ${on ? "is-active" : ""}`}
-                  onClick={() => toggleFeature(opt)}
-                  title={opt}
-                >
-                  {on ? "✓ " : ""}
-                  {opt}
-                </button>
-              );
-            })}
-          </div>
-        </div>
-
-        <div className="leave-review-field">
-        
-          <textarea
-            className="input leave-review-textarea"
-            placeholder="Напишіть кілька речень..."
-            value={reviewText}
-            onChange={(e) => setReviewText(e.target.value)}
-            rows={5}
-          />
-        </div>
-
-        <button
-  className="btn leave-review-submit"
-  type="button"
-  onClick={submitReview}
-  disabled={reviewLoading}
->
-Надіслати відгук
-</button>
-
-        {reviewMsg ? (
-          <p className="muted leave-review-message">
-            {reviewMsg}
-          </p>
-        ) : null}
-      </div>
-    </div>
-  </div>
-</section>
+        </section>
       </main>
 
       <footer className="container">

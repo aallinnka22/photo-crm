@@ -1,5 +1,4 @@
-const API_BASE = import.meta.env.VITE_API_BASE;
-
+const API_BASE = import.meta.env.VITE_API_BASE || "http://localhost:5001/api";
 
 // ✅ Покращений fetchJson: показує реальну помилку бекенду (а не просто "Server error")
 async function fetchJson(url, options) {

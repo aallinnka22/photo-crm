@@ -1,27 +1,18 @@
 const router = require("express").Router();
-const path = require("path");
-const fs = require("fs");
 const multer = require("multer");
+const { v2: cloudinary } = require("cloudinary");
 const Review = require("../models/Review");
 
-// папка для фото відгуків
-const uploadDir = path.join(__dirname, "..", "uploads", "reviews");
-fs.mkdirSync(uploadDir, { recursive: true });
-
-// multer config
-const storage = multer.diskStorage({
-  destination: (req, file, cb) => {
-    cb(null, uploadDir);
-  },
-  filename: (req, file, cb) => {
-    const ext = path.extname(file.originalname || "").toLowerCase();
-    const safeExt = [".jpg", ".jpeg", ".png", ".webp"].includes(ext) ? ext : ".jpg";
-    cb(null, `review_${Date.now()}_${Math.round(Math.random() * 1e9)}${safeExt}`);
-  },
+// Cloudinary config
+cloudinary.config({
+  cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+  api_key: process.env.CLOUDINARY_API_KEY,
+  api_secret: process.env.CLOUDINARY_API_SECRET,
 });
 
+// multer in memory
 const upload = multer({
-  storage,
+  storage: multer.memoryStorage(),
   limits: {
     fileSize: 5 * 1024 * 1024, // 5 MB
   },
@@ -31,6 +22,23 @@ const upload = multer({
     cb(new Error("Дозволені тільки JPG, PNG, WEBP"));
   },
 });
+
+function uploadBufferToCloudinary(buffer, folder = "reviews") {
+  return new Promise((resolve, reject) => {
+    const stream = cloudinary.uploader.upload_stream(
+      {
+        folder,
+        resource_type: "image",
+      },
+      (error, result) => {
+        if (error) return reject(error);
+        resolve(result);
+      }
+    );
+
+    stream.end(buffer);
+  });
+}
 
 // Public: get approved reviews for homepage
 router.get("/", async (req, res) => {
@@ -61,7 +69,6 @@ router.post("/", upload.single("photo"), async (req, res) => {
 
     const cleanRating = Math.max(1, Math.min(5, Number(rating || 5)));
 
-    // ✅ нормалізація features
     let cleanFeatures = [];
 
     if (Array.isArray(features)) {
@@ -80,7 +87,12 @@ router.post("/", upload.single("photo"), async (req, res) => {
       .filter(Boolean)
       .slice(0, 20);
 
-    const photoUrl = req.file ? `/uploads/reviews/${req.file.filename}` : "";
+    let photoUrl = "";
+
+    if (req.file?.buffer) {
+      const uploaded = await uploadBufferToCloudinary(req.file.buffer, "reviews");
+      photoUrl = uploaded.secure_url || "";
+    }
 
     await Review.create({
       name: String(name).trim(),

@@ -7,13 +7,13 @@ const ReviewSchema = new mongoose.Schema(
     rating: { type: Number, default: 5, min: 1, max: 5 },
     text: { type: String, required: true, trim: true, maxlength: 600 },
 
-    // ✅ ADDED: тип зйомки
+    // ✅ тип зйомки
     shootType: { type: String, trim: true, maxlength: 50, default: "" },
 
-    // ✅ ADDED: що сподобалось (можна обрати декілька)
+    // ✅ що сподобалось
     features: { type: [String], default: [] },
 
-    // ✅ ADDED: фото до відгуку
+    // ✅ фото до відгуку
     photoUrl: { type: String, default: "" },
 
     status: { type: String, enum: ["pending", "approved", "rejected"], default: "pending" },
