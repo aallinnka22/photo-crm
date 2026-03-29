@@ -16,6 +16,11 @@ import {
   adminListBookings,
   adminCreateBlock,
   adminDeleteBooking,
+
+  // ✅ ДОДАНО: REVIEWS moderation
+  adminListReviews,
+  adminSetReviewStatus,
+  adminDeleteReview,
 } from "../api";
 
 export default function AdminPage() {
@@ -53,6 +58,12 @@ export default function AdminPage() {
   const [slotBookings, setSlotBookings] = useState([]); // bookings for date
   const [slotBusy, setSlotBusy] = useState(false);
   const [slotMsg, setSlotMsg] = useState("");
+
+  // ✅ REVIEWS (АДМІН) — ДОДАНО
+  const [revStatusTab, setRevStatusTab] = useState("pending");
+  const [revItems, setRevItems] = useState([]);
+  const [revBusy, setRevBusy] = useState(false);
+  const [revMsg, setRevMsg] = useState("");
 
   async function load() {
     if (!token) return;
@@ -111,10 +122,7 @@ export default function AdminPage() {
       setSlotMsg("");
 
       try {
-        const [avail, book] = await Promise.all([
-          getAvailability(slotDate),
-          adminListBookings(token, slotDate),
-        ]);
+        const [avail, book] = await Promise.all([getAvailability(slotDate), adminListBookings(token, slotDate)]);
 
         if (cancelled) return;
 
@@ -136,6 +144,33 @@ export default function AdminPage() {
       cancelled = true;
     };
   }, [token, slotDate]);
+
+  // ✅ ПІДТЯГУЄМО REVIEWS ДЛЯ АДМІНА — ДОДАНО
+  useEffect(() => {
+    let cancelled = false;
+
+    async function loadReviews() {
+      if (!token) return;
+
+      setRevBusy(true);
+      setRevMsg("");
+
+      try {
+        const data = await adminListReviews(token, revStatusTab);
+        if (cancelled) return;
+        setRevItems(Array.isArray(data?.items) ? data.items : []);
+      } catch (e) {
+        if (!cancelled) setRevMsg(e.message);
+      } finally {
+        if (!cancelled) setRevBusy(false);
+      }
+    }
+
+    loadReviews();
+    return () => {
+      cancelled = true;
+    };
+  }, [token, revStatusTab]);
 
   async function doLogin() {
     try {
@@ -164,6 +199,11 @@ export default function AdminPage() {
     setSlotMsg("");
     setSlotAvail([]);
     setSlotBookings([]);
+
+    // reviews reset
+    setRevMsg("");
+    setRevItems([]);
+    setRevStatusTab("pending");
   }
 
   async function createGallery() {
@@ -171,7 +211,6 @@ export default function AdminPage() {
       setStatus("Створення...");
       const data = await adminCreateGallery(token, create);
       setNewCode(data.accessCode);
-      setStatus("Створено ✅ (код показано нижче)");
       setCreate({ clientName: "", selectionLimit: 10 });
       await load();
     } catch (e) {
@@ -184,9 +223,7 @@ export default function AdminPage() {
     if (!files.length || !activeId) return;
 
     try {
-      setStatus("Завантаження фото...");
       await adminUploadPhotos(token, activeId, files);
-      setStatus("Фото додано ✅");
       await load();
       e.target.value = "";
     } catch (err) {
@@ -197,9 +234,7 @@ export default function AdminPage() {
   async function removePhoto(photoId) {
     if (!activeId) return;
     try {
-      setStatus("Видалення...");
       await adminDeletePhoto(token, activeId, photoId);
-      setStatus("Видалено ✅");
       await load();
     } catch (e) {
       setStatus(e.message);
@@ -210,9 +245,7 @@ export default function AdminPage() {
     if (!token) return;
     if (!window.confirm("Видалити галерею разом з усіма фото?")) return;
     try {
-      setStatus("Видалення галереї...");
       await adminDeleteGallery(token, galleryId);
-      setStatus("Галерею видалено ✅");
       if (activeId === galleryId) setActiveId("");
       setNewCode("");
       setLbOpen(false);
@@ -226,9 +259,7 @@ export default function AdminPage() {
   async function setPhotoStatus(photoId, newStatus) {
     if (!activeId) return;
     try {
-      setStatus("Оновлення статусу...");
       await adminSetPhotoStatus(token, activeId, photoId, newStatus);
-      setStatus("Оновлено ✅");
       await load();
     } catch (e) {
       setStatus(e.message);
@@ -270,10 +301,7 @@ export default function AdminPage() {
 
   async function refreshSlots() {
     if (!token || !slotDate) return;
-    const [avail, book] = await Promise.all([
-      getAvailability(slotDate),
-      adminListBookings(token, slotDate),
-    ]);
+    const [avail, book] = await Promise.all([getAvailability(slotDate), adminListBookings(token, slotDate)]);
     setSlotAvail(Array.isArray(avail?.slots) ? avail.slots : []);
     setSlotBookings(Array.isArray(book?.bookings) ? book.bookings : []);
   }
@@ -286,9 +314,7 @@ export default function AdminPage() {
     // якщо це block — видаляємо (розблок)
     if (b && b.isBlock) {
       try {
-        setSlotMsg("Розблоковую...");
         await adminDeleteBooking(token, b._id);
-        setSlotMsg("✅ Слот розблоковано");
         await refreshSlots();
       } catch (e) {
         setSlotMsg(e?.message || "Помилка");
@@ -311,10 +337,35 @@ export default function AdminPage() {
         duration: 60,
         reason: "Blocked by admin",
       });
-      setSlotMsg("✅ Слот заблоковано");
       await refreshSlots();
     } catch (e) {
       setSlotMsg(e?.message || "Помилка");
+    }
+  }
+
+  // ✅ REVIEWS handlers — ДОДАНО
+  async function setReviewStatus(id, newStatus) {
+    try {
+      setRevMsg("Оновлення...");
+      await adminSetReviewStatus(token, id, newStatus);
+      setRevMsg("✅ Оновлено");
+      const data = await adminListReviews(token, revStatusTab);
+      setRevItems(Array.isArray(data?.items) ? data.items : []);
+    } catch (e) {
+      setRevMsg(e.message);
+    }
+  }
+
+  async function removeReview(id) {
+    if (!window.confirm("Видалити відгук?")) return;
+    try {
+      setRevMsg("Видалення...");
+      await adminDeleteReview(token, id);
+      setRevMsg("✅ Видалено");
+      const data = await adminListReviews(token, revStatusTab);
+      setRevItems(Array.isArray(data?.items) ? data.items : []);
+    } catch (e) {
+      setRevMsg(e.message);
     }
   }
 
@@ -331,8 +382,6 @@ export default function AdminPage() {
             <h1>Alina Photographer</h1>
           </Link>
 
-        
-
           {token ? (
             <button className="btn" type="button" onClick={logout} title="Вийти">
               Вийти
@@ -348,9 +397,6 @@ export default function AdminPage() {
               Адмін-панель
             </h2>
 
-            <p className="lead" style={{ marginBottom: 0 }}>
-              Створюйте клієнтів/галереї, генеруйте код доступу, завантажуйте фото в Cloudinary та керуйте файлами.
-            </p>
 
             {status ? (
               <div className="muted" style={{ marginTop: 10 }}>
@@ -373,18 +419,14 @@ export default function AdminPage() {
                 <button className="btn wide" type="button" onClick={doLogin}>
                   Увійти
                 </button>
-                <div className="muted" style={{ fontSize: 12 }}>
-                  Пароль береться з <code>server/.env</code>: <b>ADMIN_PASSWORD</b>
-                </div>
+                <div className="muted" style={{ fontSize: 12 }}></div>
               </div>
             </div>
           ) : (
             <div className="card panel-card" style={{ alignSelf: "start" }}>
               <div className="stack">
-                <strong>Швидкі підказки</strong>
-                <div className="muted" style={{ fontSize: 12 }}>
-                  1) Створи галерею → 2) Скопіюй код → 3) Вибери галерею → 4) Завантаж фото → 5) Познач статус.
-                </div>
+             
+               
               </div>
             </div>
           )}
@@ -422,7 +464,7 @@ export default function AdminPage() {
                   {newCode ? (
                     <div className="card" style={{ border: "1px solid rgba(34,197,94,0.6)", padding: 12 }}>
                       <div className="muted" style={{ fontSize: 12 }}>
-                        Код доступу (надішли клієнту):
+                        Код доступу:
                       </div>
                       <div style={{ fontSize: 20, fontWeight: 800, marginTop: 6 }}>{newCode}</div>
                       <button
@@ -496,12 +538,7 @@ export default function AdminPage() {
                     <div className="muted" style={{ fontSize: 12, marginBottom: 6 }}>
                       Дата
                     </div>
-                    <input
-                      className="input"
-                      type="date"
-                      value={slotDate}
-                      onChange={(e) => setSlotDate(e.target.value)}
-                    />
+                    <input className="input" type="date" value={slotDate} onChange={(e) => setSlotDate(e.target.value)} />
                   </div>
 
                   <div className="muted" style={{ fontSize: 12 }}>
@@ -576,6 +613,74 @@ export default function AdminPage() {
                     </div>
                   </div>
                 </div>
+
+                {/* ✅ НОВИЙ БЛОК: ВІДГУКИ (ДОДАНО) */}
+                <hr className="sep" style={{ margin: "16px 0" }} />
+                <h3 style={{ marginTop: 0 }}>Відгуки клієнтів</h3>
+
+                <div className="tabs" style={{ marginBottom: 10 }}>
+                  <button className={`tab ${revStatusTab === "pending" ? "active" : ""}`} type="button" onClick={() => setRevStatusTab("pending")}>
+                   В очікуванні
+                  </button>
+                  <button className={`tab ${revStatusTab === "approved" ? "active" : ""}`} type="button" onClick={() => setRevStatusTab("approved")}>
+                    Підтверджені
+                  </button>
+                  <button className={`tab ${revStatusTab === "rejected" ? "active" : ""}`} type="button" onClick={() => setRevStatusTab("rejected")}>
+                  Відхилені
+                  </button>
+                </div>
+
+                {revMsg ? (
+                  <div className="muted" style={{ fontSize: 12, marginBottom: 8 }}>
+                    {revMsg}
+                  </div>
+                ) : null}
+
+                <div className="stack" style={{ maxHeight: 360, overflow: "auto" }}>
+                  {(revItems || []).map((r) => (
+                    <div key={r._id} className="card" style={{ padding: 12, background: "rgba(0,0,0,0.22)" }}>
+                      <div style={{ display: "flex", justifyContent: "space-between", gap: 10 }}>
+                        <div style={{ minWidth: 0 }}>
+                          <div style={{ fontWeight: 800 }}>
+                            {r.name}{" "}
+                            <span className="muted" style={{ fontWeight: 400, fontSize: 12 }}>
+                              ({r.rating}/5)
+                            </span>
+                          </div>
+                          {r.contact ? (
+                            <div className="muted" style={{ fontSize: 12 }}>
+                              {r.contact}
+                            </div>
+                          ) : null}
+                          {r.createdAt ? (
+                            <div className="muted" style={{ fontSize: 12 }}>
+                              {new Date(r.createdAt).toLocaleString()}
+                            </div>
+                          ) : null}
+                        </div>
+
+                        <button type="button" className="icon-btn" onClick={() => removeReview(r._id)} title="Видалити">
+                          🗑️
+                        </button>
+                      </div>
+
+                      <div className="muted" style={{ marginTop: 8, fontSize: 13, whiteSpace: "pre-wrap" }}>
+                        {r.text}
+                      </div>
+
+                      <div style={{ display: "flex", gap: 8, flexWrap: "wrap", marginTop: 10 }}>
+                        <button className="btn" type="button" disabled={revBusy} onClick={() => setReviewStatus(r._id, "approved")}>
+                         Підтвердити
+                        </button>
+                        <button className="btn" type="button" disabled={revBusy} onClick={() => setReviewStatus(r._id, "rejected")}>
+                          Відхилити
+                        </button>
+            
+                      </div>
+                    </div>
+                  ))}
+                  {!revBusy && !revItems.length ? <div className="muted">Поки що порожньо.</div> : null}
+                </div>
               </div>
 
               {/* RIGHT */}
@@ -590,10 +695,7 @@ export default function AdminPage() {
                   </div>
 
                   <div className="file-row">
-                    <label
-                      className="btn"
-                      style={{ cursor: activeId ? "pointer" : "not-allowed", opacity: activeId ? 1 : 0.5 }}
-                    >
+                    <label className="btn" style={{ cursor: activeId ? "pointer" : "not-allowed", opacity: activeId ? 1 : 0.5 }}>
                       Вибрати файли
                       <input
                         type="file"
@@ -689,9 +791,7 @@ export default function AdminPage() {
                                       : "rgba(255,255,255,0.06)",
                                 }}
                               >
-                                {(p.status || "preview") === "final"
-                                  ? "Фінальне (можна завантажувати)"
-                                  : "Превʼю (для вибору)"}
+                                {(p.status || "preview") === "final" ? "Фінальне (можна завантажувати)" : "Превʼю (для вибору)"}
                               </div>
                             </div>
 
@@ -717,11 +817,7 @@ export default function AdminPage() {
                       })}
                     </div>
 
-                    {!active?.photos?.length ? (
-                      <div className="muted" style={{ marginTop: 14 }}>
-                        Поки що фото не завантажені.
-                      </div>
-                    ) : null}
+                    {!active?.photos?.length ? <div className="muted" style={{ marginTop: 14 }}>Поки що фото не завантажені.</div> : null}
 
                     {/* ✅ ОКРЕМИЙ БЛОК: ВИБІР КЛІЄНТА */}
                     <div style={{ marginTop: 16 }}>

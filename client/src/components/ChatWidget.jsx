@@ -1,26 +1,10 @@
 import { useMemo, useRef, useState } from "react";
 
 const PRESET_QA = [
-  {
-    q: "Скільки триває фотосесія і що входить у пакет?",
-    a: "Зазвичай: 30 хв або 1 година (залежить від пакету). Я допомагаю з позуванням, підкажу з локацією/образом. Після зйомки ви отримуєте приватну галерею, де обираєте фото на ретуш.",
-  },
-  {
-    q: "Що вдягнути на зйомку?",
-    a: "Краще однотонні речі без великих логотипів. Для портретів — нейтральні кольори, для сімейної — узгоджена палітра. Якщо хочеш — напиши стиль/локацію і я підкажу 2–3 варіанти.",
-  },
-  {
-    q: "Чи допомагаєш з позуванням?",
-    a: "Так. Я підказую пози, руки/погляд, слідкую за деталями в кадрі. Вам не потрібно вміти позувати — все проведу по кроках.",
-  },
-  {
-    q: "Коли будуть готові фото?",
-    a: "Термін залежить від завантаження та пакету. Зазвичай кілька днів на відбір + ретуш. Якщо потрібно швидко — можна домовитись про експрес-готовність.",
-  },
-  {
-    q: "Де проходить зйомка — студія чи вулиця?",
-    a: "Як вам зручно: вулиця/місто, кафе, студія (оренда студії зазвичай оплачується окремо). Порадьтеся зі мною — підберемо під ваш стиль.",
-  },
+  "Скільки триває фотосесія?",
+  "Що вдягнути на зйомку?",
+  "Чи допомагаєш з позуванням?",
+  "Коли будуть готові фото?",
 ];
 
 function nowTime() {
@@ -30,7 +14,6 @@ function nowTime() {
 
 export default function ChatWidget({ apiBase }) {
   const [open, setOpen] = useState(false);
-  const [mode, setMode] = useState("faq"); // faq | ai
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
 
@@ -38,7 +21,7 @@ export default function ChatWidget({ apiBase }) {
     {
       role: "assistant",
       text:
-        "Привіт! Я помічник Аліни 🙂\nМожу відповісти на типові питання про фотосесію або прийняти ваше запитання.",
+        "Привіт! Я AI-помічник фотографа Аліни 🙂\nМожу підказати щодо фотосесії, образу, позування, локації, термінів готовності та бронювання.",
       time: nowTime(),
     },
   ]);
@@ -47,52 +30,65 @@ export default function ChatWidget({ apiBase }) {
 
   const suggested = useMemo(() => PRESET_QA, []);
 
-  function push(role, text) {
-    setMessages((prev) => [...prev, { role, text, time: nowTime() }]);
-    // прокрутка вниз
+  function scrollToBottom() {
     setTimeout(() => {
       const el = boxRef.current;
       if (el) el.scrollTop = el.scrollHeight;
     }, 0);
   }
 
-  function askPreset(item) {
-    push("user", item.q);
-    push("assistant", item.a);
-    setOpen(true);
+  function push(role, text) {
+    setMessages((prev) => [...prev, { role, text, time: nowTime() }]);
+    scrollToBottom();
   }
 
-  async function sendAI() {
-    const q = input.trim();
-    if (!q) return;
+  async function sendMessage(messageText) {
+    const q = String(messageText || "").trim();
+    if (!q || loading) return;
 
     push("user", q);
     setInput("");
-
     setLoading(true);
+
     try {
       const res = await fetch(`${apiBase}/chat`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           message: q,
-          // короткий контекст, щоб відповіді були “про фотосесію”
           context: {
             brand: "Alina Photographer",
             language: "uk",
+            role: "photo_assistant",
           },
         }),
       });
 
       const data = await res.json().catch(() => ({}));
-      if (!res.ok) throw new Error(data?.message || "Помилка чату");
 
-      push("assistant", data?.answer || "Вибач, не змогла відповісти. Спробуй переформулювати.");
+      if (!res.ok) {
+        throw new Error(data?.message || "Помилка чату");
+      }
+
+      push(
+        "assistant",
+        data?.answer ||
+          "Вибач, не змогла відповісти. Спробуй переформулювати питання."
+      );
     } catch (e) {
       push("assistant", "❌ " + (e?.message || "Помилка"));
     } finally {
       setLoading(false);
     }
+  }
+
+  function handlePresetClick(question) {
+    setOpen(true);
+    sendMessage(question);
+  }
+
+  function handleSubmit() {
+    sendMessage(input);
   }
 
   return (
@@ -107,7 +103,6 @@ export default function ChatWidget({ apiBase }) {
         fontFamily: "inherit",
       }}
     >
-      {/* Launcher */}
       {!open ? (
         <button
           className="btn"
@@ -124,7 +119,6 @@ export default function ChatWidget({ apiBase }) {
         </button>
       ) : null}
 
-      {/* Window */}
       {open ? (
         <div
           className="card"
@@ -137,7 +131,6 @@ export default function ChatWidget({ apiBase }) {
             boxShadow: "0 16px 40px rgba(0,0,0,0.45)",
           }}
         >
-          {/* Header */}
           <div
             style={{
               display: "flex",
@@ -149,59 +142,52 @@ export default function ChatWidget({ apiBase }) {
             }}
           >
             <div style={{ display: "grid" }}>
-              <strong style={{ lineHeight: 1.1 }}>Помічник фотографа</strong>
+              <strong style={{ lineHeight: 1.1 }}>AI-помічник фотографа</strong>
               <span className="muted" style={{ fontSize: 12 }}>
-                FAQ + чат
+                Відповідає на питання про фотосесію
               </span>
             </div>
 
-            <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
-              <button
-                type="button"
-                className="btn"
-                onClick={() => setMode((m) => (m === "faq" ? "ai" : "faq"))}
-                style={{ padding: "8px 10px" }}
-                title="Перемкнути режим"
-              >
-                {mode === "faq" ? "FAQ" : "AI"}
-              </button>
-
-              <button
-                type="button"
-                className="icon-btn"
-                onClick={() => setOpen(false)}
-                aria-label="Закрити чат"
-                title="Закрити"
-              >
-                ✕
-              </button>
-            </div>
+            <button
+              type="button"
+              className="icon-btn"
+              onClick={() => setOpen(false)}
+              aria-label="Закрити чат"
+              title="Закрити"
+            >
+              ✕
+            </button>
           </div>
 
-          {/* Content */}
           <div style={{ padding: 12 }}>
-            {/* Quick questions */}
-            <div style={{ display: "flex", gap: 8, flexWrap: "wrap", marginBottom: 10 }}>
-              {suggested.slice(0, 4).map((item) => (
+            <div
+              style={{
+                display: "flex",
+                gap: 8,
+                flexWrap: "wrap",
+                marginBottom: 10,
+              }}
+            >
+              {suggested.slice(0, 4).map((question) => (
                 <button
-                  key={item.q}
+                  key={question}
                   type="button"
                   className="btn"
-                  onClick={() => askPreset(item)}
+                  onClick={() => handlePresetClick(question)}
+                  disabled={loading}
                   style={{
                     padding: "8px 10px",
                     borderRadius: 999,
                     opacity: 0.9,
                     fontSize: 12,
                   }}
-                  title={item.q}
+                  title={question}
                 >
-                  {item.q.length > 26 ? item.q.slice(0, 26) + "…" : item.q}
+                  {question.length > 26 ? question.slice(0, 26) + "…" : question}
                 </button>
               ))}
             </div>
 
-            {/* Messages */}
             <div
               ref={boxRef}
               style={{
@@ -217,7 +203,8 @@ export default function ChatWidget({ apiBase }) {
                   key={idx}
                   style={{
                     display: "flex",
-                    justifyContent: m.role === "user" ? "flex-end" : "flex-start",
+                    justifyContent:
+                      m.role === "user" ? "flex-end" : "flex-start",
                   }}
                 >
                   <div
@@ -227,43 +214,52 @@ export default function ChatWidget({ apiBase }) {
                       borderRadius: 16,
                       border: "1px solid rgba(255,255,255,0.10)",
                       background:
-                        m.role === "user" ? "rgba(34,197,94,0.12)" : "rgba(255,255,255,0.06)",
+                        m.role === "user"
+                          ? "rgba(34,197,94,0.12)"
+                          : "rgba(255,255,255,0.06)",
                       whiteSpace: "pre-wrap",
                       lineHeight: 1.35,
                     }}
                   >
                     <div style={{ fontSize: 13 }}>{m.text}</div>
-                    <div className="muted" style={{ fontSize: 11, marginTop: 6 }}>
+                    <div
+                      className="muted"
+                      style={{ fontSize: 11, marginTop: 6 }}
+                    >
                       {m.time}
                     </div>
                   </div>
                 </div>
               ))}
+
+              {loading ? (
+                <div style={{ display: "flex", justifyContent: "flex-start" }}>
+                  <div
+                    style={{
+                      maxWidth: "85%",
+                      padding: "10px 12px",
+                      borderRadius: 16,
+                      border: "1px solid rgba(255,255,255,0.10)",
+                      background: "rgba(255,255,255,0.06)",
+                      lineHeight: 1.35,
+                      fontSize: 13,
+                    }}
+                  >
+                    Думаю...
+                  </div>
+                </div>
+              ) : null}
             </div>
 
-            {/* Input */}
             <div style={{ display: "grid", gap: 8, marginTop: 10 }}>
               <input
                 className="input"
-                placeholder={
-                  mode === "faq"
-                    ? "Напиши питання (або натисни кнопку вище)"
-                    : "Запитай — відповість AI"
-                }
+                placeholder="Напишіть ваше питання..."
                 value={input}
                 onChange={(e) => setInput(e.target.value)}
                 onKeyDown={(e) => {
                   if (e.key === "Enter") {
-                    if (mode === "ai") sendAI();
-                    else {
-                      // у FAQ-режимі просто відобразимо підказку
-                      push("user", input.trim());
-                      push(
-                        "assistant",
-                        "Порада: натисни одну з кнопок FAQ або увімкни режим AI, щоб я відповіла на будь-яке питання 🙂"
-                      );
-                      setInput("");
-                    }
+                    handleSubmit();
                   }
                 }}
                 disabled={loading}
@@ -272,17 +268,12 @@ export default function ChatWidget({ apiBase }) {
               <button
                 className="btn wide"
                 type="button"
-                onClick={() => (mode === "ai" ? sendAI() : null)}
-                disabled={loading || mode !== "ai"}
-                title={mode !== "ai" ? "Увімкни AI режим" : "Надіслати"}
+                onClick={handleSubmit}
+                disabled={loading || !input.trim()}
+                title="Надіслати"
               >
-                {loading ? "Думаю..." : mode === "ai" ? "Надіслати" : "AI вимкнено"}
+                {loading ? "Думаю..." : "Надіслати"}
               </button>
-
-              <div className="muted" style={{ fontSize: 11 }}>
-  * AI відповідає через сервер (ключ не зберігається у браузері).
-</div>
-
             </div>
           </div>
         </div>

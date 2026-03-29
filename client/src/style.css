@@ -699,10 +699,12 @@ img { max-width: 100%; height: auto; display: block; }
 html, body { max-width: 100%; overflow-x: hidden; }
 img { max-width: 100%; height: auto; display: block; }
 
+
 @media (max-width: 720px) {
   /* container padding */
   .container { width: min(1120px, 94vw); padding-left: 14px; padding-right: 14px; }
 
+  
   /* -----------------------------
      HEADER FIX (brand + logout + menu)
      ----------------------------- */
@@ -814,9 +816,9 @@ img { max-width: 100%; height: auto; display: block; }
 
   /* Картка фото — більша та "дихаюча" */
   .folio .ph{
-    aspect-ratio: 3 / 4;              /* стабільна висота */
-    border-radius: 18px;
-  }
+  aspect-ratio: 3 / 4;
+  border-radius: 18px;
+}
 
   .folio img{
     width: 100%;
@@ -831,3 +833,231 @@ img { max-width: 100%; height: auto; display: block; }
     grid-template-columns: 1fr !important;
   }
 }
+
+
+
+.leave-review-wrap{
+  margin-top: 8px;
+}
+
+.leave-review-title{
+  text-align: center;
+  margin-bottom: 20px;
+}
+
+.leave-review-center{
+  width: 100%;
+  max-width: 980px;
+  margin: 0 auto;
+}
+
+.leave-review-card{
+  width: 100%;
+  padding: 24px;
+  border-radius: 26px;
+  background: rgba(0,0,0,0.18);
+  border: 1px solid rgba(255,255,255,0.10);
+}
+
+.leave-review-intro{
+  margin-top: 0;
+  margin-bottom: 18px;
+  line-height: 1.5;
+}
+
+.leave-review-stack{
+  display: grid;
+  gap: 16px;
+}
+
+.leave-review-grid-top{
+  display: grid;
+  grid-template-columns: minmax(220px, 340px) auto minmax(220px, 320px);
+  gap: 18px;
+  align-items: start;
+}
+
+.leave-review-field{
+  width: 100%;
+  min-width: 0;
+}
+
+.leave-review-field .label{
+  display: inline-block;
+  margin-bottom: 8px;
+}
+
+.leave-review-field-name .input{
+  width: 100%;
+  max-width: 340px;
+}
+
+.leave-review-field-type .input,
+.leave-review-select-short{
+  width: 100%;
+  max-width: 320px;
+}
+
+.leave-review-rating-row{
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  flex-wrap: nowrap;
+}
+
+.leave-review-star{
+  width: 44px;
+  height: 44px;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 18px;
+  background: transparent;
+  border: 1px solid rgba(255,255,255,0.12);
+  border-radius: 10px;
+  opacity: .75;
+  transition: transform .15s ease, opacity .15s ease, border-color .15s ease;
+}
+
+.leave-review-star:hover{
+  transform: translateY(-1px);
+  opacity: 1;
+}
+
+.leave-review-star.is-active{
+  border: 2px solid rgba(79, 45, 146, 0.85);
+  opacity: 1;
+}
+
+.leave-review-note{
+  font-size: 12px;
+  margin-top: 8px;
+}
+
+.leave-review-features{
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  align-items: center;
+}
+
+.leave-review-chip{
+  padding: 9px 12px;
+  background: transparent;
+  border: 1px solid rgba(255,255,255,0.12);
+  opacity: .8;
+  white-space: nowrap;
+  transition: transform .18s ease, opacity .18s ease, border-color .18s ease;
+}
+
+.leave-review-chip:hover{
+  transform: translateY(-1px);
+  opacity: 1;
+}
+
+.leave-review-chip.is-active{
+  border: 2px solid rgba(79, 45, 146, 0.85);
+  opacity: 1;
+}
+
+.leave-review-textarea{
+  width: 100%;
+  max-width: 100%;
+  min-height: 140px;
+  resize: vertical;
+}
+
+.leave-review-submit{
+  width: fit-content;
+  min-width: 220px;
+  padding: 12px 22px;
+  margin-top: 2px;
+  align-self: start;
+}
+
+.leave-review-message{
+  margin-top: 4px;
+}
+
+@media (max-width: 980px){
+  .leave-review-grid-top{
+    grid-template-columns: 1fr;
+    gap: 16px;
+  }
+
+  .leave-review-field-name .input,
+  .leave-review-field-type .input,
+  .leave-review-select-short{
+    max-width: 100%;
+  }
+
+  .leave-review-submit{
+    width: 100%;
+    min-width: 0;
+  }
+}
+
+@media (max-width: 900px){
+  .leave-review-center{
+    max-width: 760px;
+  }
+
+  .leave-review-card{
+    padding: 20px;
+    border-radius: 22px;
+  }
+}
+
+@media (max-width: 640px){
+  .leave-review-title{
+    margin-bottom: 16px;
+  }
+
+  .leave-review-card{
+    padding: 16px;
+    border-radius: 18px;
+  }
+
+  .leave-review-stack{
+    gap: 14px;
+  }
+
+  .leave-review-star{
+    min-width: 44px;
+    height: 42px;
+  }
+
+  .leave-review-chip{
+    font-size: 14px;
+    padding: 8px 11px;
+  }
+
+  .leave-review-textarea{
+    min-height: 120px;
+  }
+}
+
+
+
+/* ===== Disable hover scale on client + admin pages ===== */
+
+/* Адмінка */
+.panel-card:hover,
+.thumb:hover {
+  transform: none !important;
+}
+
+/* Клієнтська галерея */
+.photoTile:hover {
+  transform: none !important;
+}
+
+/* якщо всередині картинок був zoom */
+.panel-card:hover img,
+.thumb:hover img,
+.photoTile:hover img {
+  transform: none !important;
+}
+
+

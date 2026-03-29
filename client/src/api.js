@@ -160,3 +160,39 @@ export async function adminDeleteBooking(token, id) {
     headers: { Authorization: `Bearer ${token}` },
   });
 } 
+
+
+// ===== Reviews (Public) =====
+export async function getReviews(limit = 20) {
+  return fetchJson(`${API_BASE}/reviews?limit=${encodeURIComponent(limit)}`);
+}
+
+export async function createReview(payload) {
+  return fetchJson(`${API_BASE}/reviews`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(payload),
+  });
+}
+
+// ===== Reviews (Admin) =====
+export async function adminListReviews(token, status = "pending") {
+  return fetchJson(`${API_BASE}/admin/reviews?status=${encodeURIComponent(status)}`, {
+    headers: { Authorization: `Bearer ${token}` },
+  });
+}
+
+export async function adminSetReviewStatus(token, id, status) {
+  return fetchJson(`${API_BASE}/admin/reviews/${id}`, {
+    method: "PATCH",
+    headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+    body: JSON.stringify({ status }),
+  });
+}
+
+export async function adminDeleteReview(token, id) {
+  return fetchJson(`${API_BASE}/admin/reviews/${id}`, {
+    method: "DELETE",
+    headers: { Authorization: `Bearer ${token}` },
+  });
+}

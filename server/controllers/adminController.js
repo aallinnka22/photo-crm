@@ -4,6 +4,7 @@ const Gallery = require("../models/Gallery");
 const Selection = require("../models/Selection"); // ✅ ДОДАНО
 const { slugify, randomCode } = require("../utils/slug");
 const { cloudinary, assertCloudinaryConfigured } = require("../services/cloudinary");
+const Review = require("../models/Review");
 
 // ===== helpers =====
 function ensureEnv(name) {
@@ -250,5 +251,47 @@ exports.deleteGallery = async (req, res) => {
   } catch (e) {
     console.error("deleteGallery error:", e);
     return res.status(500).json({ message: "Помилка видалення галереї" });
+  }
+};
+
+
+// ===== REVIEWS (NEW) =====
+exports.listReviews = async (req, res) => {
+  try {
+    const status = String(req.query.status || "pending");
+    const q = ["pending", "approved", "rejected"].includes(status) ? { status } : {};
+    const items = await Review.find(q).sort({ createdAt: -1 }).limit(200).lean();
+    return res.json({ ok: true, items });
+  } catch (e) {
+    return res.status(500).json({ message: "Помилка отримання відгуків" });
+  }
+};
+
+exports.setReviewStatus = async (req, res) => {
+  try {
+    const { status } = req.body || {};
+    if (!["pending", "approved", "rejected"].includes(String(status))) {
+      return res.status(400).json({ message: "Bad status" });
+    }
+    const item = await Review.findByIdAndUpdate(
+      req.params.id,
+      { status: String(status) },
+      { new: true }
+    ).lean();
+
+    if (!item) return res.status(404).json({ message: "Not found" });
+    return res.json({ ok: true, item });
+  } catch (e) {
+    return res.status(500).json({ message: "Помилка оновлення" });
+  }
+};
+
+exports.deleteReview = async (req, res) => {
+  try {
+    const item = await Review.findByIdAndDelete(req.params.id).lean();
+    if (!item) return res.status(404).json({ message: "Not found" });
+    return res.json({ ok: true });
+  } catch (e) {
+    return res.status(500).json({ message: "Помилка видалення" });
   }
 };

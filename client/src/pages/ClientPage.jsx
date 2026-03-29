@@ -245,7 +245,7 @@ export default function ClientPage() {
     } catch (e) {
       console.error(e);
       window.open(url, "_blank", "noopener,noreferrer");
-      setStatus("Відкрив(ла) фото в новій вкладці (звідти можна зберегти).");
+     
       setTimeout(() => setStatus(""), 2000);
     } finally {
       setDownloadingId("");
@@ -258,7 +258,7 @@ export default function ClientPage() {
       return;
     }
 
-    setStatus("Запускаю завантаження всіх фінальних фото…");
+ 
 
     for (const p of finalPhotos) {
       await downloadFinal(p);
@@ -563,7 +563,7 @@ export default function ClientPage() {
           <div>
             <h2 className="title" style={{ marginBottom: 6 }}>Галерея</h2>
             <p className="lead" style={{ margin: 0 }}>
-              Натисніть на фото — щоб відкрити на весь екран. Натисніть ❤ — щоб обрати для ретуші.
+          
             </p>
           </div>
 
@@ -677,7 +677,7 @@ export default function ClientPage() {
               marginBottom: 12,
             }}
           >
-            <h3 style={{ margin: 0 }}>Фінальні фото (можна завантажити)</h3>
+            <h3 style={{ margin: 0 }}>Фінальні фото </h3>
 
             <button
               type="button"

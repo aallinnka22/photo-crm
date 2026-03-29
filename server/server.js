@@ -9,7 +9,7 @@ const bookingRoutes = require("./routes/bookingRoutes");
 const galleryRoutes = require("./routes/galleryRoutes");
 const adminRoutes = require("./routes/adminRoutes");
 const chatRoutes = require("./routes/chatRoutes");
-
+const reviewRoutes = require("./routes/reviewRoutes");
 const app = express();
 
 /* =========================
@@ -67,7 +67,7 @@ app.use("/api/bookings", bookingRoutes);
 app.use("/api/galleries", galleryRoutes);
 app.use("/api/admin", adminRoutes);
 app.use("/api/chat", chatRoutes);
-
+app.use("/api/reviews", reviewRoutes);
 /* =========================
    Static (НЕ обовʼязково)
    Render не віддає фронт,
