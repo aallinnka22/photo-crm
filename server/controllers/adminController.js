@@ -1,12 +1,15 @@
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 const Gallery = require("../models/Gallery");
-const Selection = require("../models/Selection"); // ✅ ДОДАНО
+const Selection = require("../models/Selection"); 
 const { slugify, randomCode } = require("../utils/slug");
-const { cloudinary, assertCloudinaryConfigured } = require("../services/cloudinary");
+const {
+  cloudinary,
+  assertCloudinaryConfigured,
+} = require("../services/cloudinary");
 const Review = require("../models/Review");
 
-// ===== helpers =====
+
 function ensureEnv(name) {
   if (!process.env[name]) throw new Error(`${name} is missing in .env`);
 }
@@ -30,14 +33,15 @@ function makeSlug(clientName) {
   return `${base}-${yyyy}-${mm}-${dd}-${randomCode(4).toLowerCase()}`;
 }
 
-// ===== controllers =====
+
 exports.login = async (req, res) => {
   try {
     ensureEnv("JWT_SECRET");
     ensureEnv("ADMIN_PASSWORD");
 
     const { password } = req.body;
-    if (!password) return res.status(400).json({ message: "Password is required" });
+    if (!password)
+      return res.status(400).json({ message: "Password is required" });
 
     if (password !== process.env.ADMIN_PASSWORD) {
       return res.status(401).json({ message: "Wrong password" });
@@ -46,7 +50,7 @@ exports.login = async (req, res) => {
     const token = jwt.sign(
       { role: "admin", email: process.env.ADMIN_EMAIL || "" },
       process.env.JWT_SECRET,
-      { expiresIn: "12h" }
+      { expiresIn: "12h" },
     );
 
     return res.json({ token });
@@ -83,10 +87,13 @@ exports.createGallery = async (req, res) => {
 
 exports.listGalleries = async (req, res) => {
   try {
-    // було: items = Gallery.find...
-    const items = await Gallery.find().sort({ createdAt: -1 }).limit(100).lean();
+   
+    const items = await Gallery.find()
+      .sort({ createdAt: -1 })
+      .limit(100)
+      .lean();
 
-    // ✅ ДОДАНО: підтягнути кількість вибраних фото (selectedCount)
+
     const ids = items.map((g) => g._id);
     const selections = await Selection.find({ gallery: { $in: ids } })
       .select("gallery selectedPhotoIds")
@@ -111,11 +118,11 @@ exports.listGalleries = async (req, res) => {
 
 exports.getGallery = async (req, res) => {
   try {
-    // було: Gallery.findById(...)
+   
     const g = await Gallery.findById(req.params.id).lean();
     if (!g) return res.status(404).json({ message: "Not found" });
 
-    // ✅ ДОДАНО: підтягнути вибір клієнта з Selection
+   
     const sel = await Selection.findOne({ gallery: req.params.id }).lean();
 
     return res.json({
@@ -140,7 +147,8 @@ exports.uploadPhotos = async (req, res) => {
     if (!gallery) return res.status(404).json({ message: "Gallery not found" });
 
     const files = req.files || [];
-    if (!files.length) return res.status(400).json({ message: "No files uploaded" });
+    if (!files.length)
+      return res.status(400).json({ message: "No files uploaded" });
 
     const folder = process.env.CLOUDINARY_FOLDER || "photo-crm";
 
@@ -152,7 +160,7 @@ exports.uploadPhotos = async (req, res) => {
             folder: `${folder}/${gallery.slug}`,
             resource_type: "image",
           },
-          (err, out) => (err ? reject(err) : resolve(out))
+          (err, out) => (err ? reject(err) : resolve(out)),
         );
         stream.end(f.buffer);
       });
@@ -171,7 +179,11 @@ exports.uploadPhotos = async (req, res) => {
     gallery.photos.push(...uploaded);
     await gallery.save();
 
-    return res.json({ ok: true, added: uploaded.length, photos: gallery.photos });
+    return res.json({
+      ok: true,
+      added: uploaded.length,
+      photos: gallery.photos,
+    });
   } catch (e) {
     console.error("uploadPhotos error:", e.message);
     return res.status(500).json({ message: "Server error" });
@@ -189,7 +201,9 @@ exports.deletePhoto = async (req, res) => {
     const photo = gallery.photos.id(photoId);
     if (!photo) return res.status(404).json({ message: "Photo not found" });
 
-    await cloudinary.uploader.destroy(photo.publicId, { resource_type: "image" });
+    await cloudinary.uploader.destroy(photo.publicId, {
+      resource_type: "image",
+    });
 
     photo.deleteOne();
     await gallery.save();
@@ -201,13 +215,15 @@ exports.deletePhoto = async (req, res) => {
   }
 };
 
-// Change photo status (preview <-> final)
+
 exports.setPhotoStatus = async (req, res) => {
   try {
     const { id, photoId } = req.params;
     const { status } = req.body;
     if (!status || !["preview", "final"].includes(String(status))) {
-      return res.status(400).json({ message: "Status must be 'preview' or 'final'" });
+      return res
+        .status(400)
+        .json({ message: "Status must be 'preview' or 'final'" });
     }
 
     const gallery = await Gallery.findById(id);
@@ -219,7 +235,12 @@ exports.setPhotoStatus = async (req, res) => {
     photo.status = String(status);
     await gallery.save();
 
-    return res.json({ ok: true, photoId, status: photo.status, photos: gallery.photos });
+    return res.json({
+      ok: true,
+      photoId,
+      status: photo.status,
+      photos: gallery.photos,
+    });
   } catch (e) {
     console.error("setPhotoStatus error:", e.message);
     return res.status(500).json({ message: "Server error" });
@@ -235,7 +256,7 @@ exports.deleteGallery = async (req, res) => {
       return res.status(404).json({ message: "Галерею не знайдено" });
     }
 
-    // ✅ видаляємо фото з Cloudinary
+   
     for (const photo of gallery.photos) {
       if (photo.publicId) {
         await cloudinary.uploader.destroy(photo.publicId);
@@ -244,7 +265,7 @@ exports.deleteGallery = async (req, res) => {
 
     await Gallery.findByIdAndDelete(id);
 
-    // ✅ ДОДАНО: почистити Selection щоб не висіло сміття
+
     await Selection.deleteOne({ gallery: id });
 
     return res.json({ ok: true });
@@ -255,12 +276,16 @@ exports.deleteGallery = async (req, res) => {
 };
 
 
-// ===== REVIEWS (NEW) =====
 exports.listReviews = async (req, res) => {
   try {
     const status = String(req.query.status || "pending");
-    const q = ["pending", "approved", "rejected"].includes(status) ? { status } : {};
-    const items = await Review.find(q).sort({ createdAt: -1 }).limit(200).lean();
+    const q = ["pending", "approved", "rejected"].includes(status)
+      ? { status }
+      : {};
+    const items = await Review.find(q)
+      .sort({ createdAt: -1 })
+      .limit(200)
+      .lean();
     return res.json({ ok: true, items });
   } catch (e) {
     return res.status(500).json({ message: "Помилка отримання відгуків" });
@@ -276,7 +301,7 @@ exports.setReviewStatus = async (req, res) => {
     const item = await Review.findByIdAndUpdate(
       req.params.id,
       { status: String(status) },
-      { new: true }
+      { new: true },
     ).lean();
 
     if (!item) return res.status(404).json({ message: "Not found" });

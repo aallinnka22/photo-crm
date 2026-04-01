@@ -12,13 +12,13 @@ export default function App() {
       document.documentElement.classList.toggle("light", t === "light");
     };
 
-    // застосувати одразу при старті App (на будь-якому роуті)
+   
     applyTheme();
 
-    // щоб працювало навіть якщо localStorage змінюється
+   
     window.addEventListener("storage", applyTheme);
 
-    // додатково: ловимо зміну theme в цьому ж табі (бо storage інколи не тригериться в тому ж вікні)
+  
     const origSetItem = localStorage.setItem;
     localStorage.setItem = function (key, value) {
       origSetItem.apply(this, [key, value]);

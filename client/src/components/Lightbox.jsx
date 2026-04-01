@@ -9,7 +9,7 @@ export default function Lightbox({
   onNext,
   children,
 
-  // ✅ нові пропси (щоб як у тебе в ClientPage)
+
   canLike = false,
   liked = false,
   onToggleLike,
@@ -39,9 +39,19 @@ export default function Lightbox({
   if (!isOpen) return null;
 
   return (
-    <div className="lb-backdrop" onClick={onClose} role="dialog" aria-modal="true">
+    <div
+      className="lb-backdrop"
+      onClick={onClose}
+      role="dialog"
+      aria-modal="true"
+    >
       <div className="lb-card" onClick={(e) => e.stopPropagation()}>
-        <button className="lb-x" type="button" onClick={onClose} aria-label="Закрити">
+        <button
+          className="lb-x"
+          type="button"
+          onClick={onClose}
+          aria-label="Закрити"
+        >
           ✕
         </button>
 
@@ -54,15 +64,24 @@ export default function Lightbox({
           />
 
           {/* overlay nav buttons */}
-          <button className="lb-nav lb-prev" type="button" onClick={onPrev} aria-label="Попереднє">
+          <button
+            className="lb-nav lb-prev"
+            type="button"
+            onClick={onPrev}
+            aria-label="Попереднє"
+          >
             ←
           </button>
-          <button className="lb-nav lb-next" type="button" onClick={onNext} aria-label="Наступне">
+          <button
+            className="lb-nav lb-next"
+            type="button"
+            onClick={onNext}
+            aria-label="Наступне"
+          >
             →
           </button>
 
-          {/* ✅ actions справа зверху */}
-          {(children || canLike || canDownload) ? (
+          {children || canLike || canDownload ? (
             <div className="lb-actions" onClick={(e) => e.stopPropagation()}>
               {canLike ? (
                 <button

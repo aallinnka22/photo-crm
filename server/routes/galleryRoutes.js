@@ -9,7 +9,7 @@ function mustFn(fn, name) {
     const keys = Object.keys(ctrl || {});
     throw new Error(
       `${name} is not a function. typeof=${typeof fn}. ` +
-      `galleryController exports: ${keys.join(", ") || "(none)"}`
+        `galleryController exports: ${keys.join(", ") || "(none)"}`,
     );
   }
   return fn;
@@ -17,14 +17,22 @@ function mustFn(fn, name) {
 
 router.post("/login", mustFn(ctrl.loginByCode, "ctrl.loginByCode"));
 
-router.get("/me/photos", mustFn(galleryAuth, "galleryAuth"), mustFn(ctrl.getMyPhotos, "ctrl.getMyPhotos"));
+router.get(
+  "/me/photos",
+  mustFn(galleryAuth, "galleryAuth"),
+  mustFn(ctrl.getMyPhotos, "ctrl.getMyPhotos"),
+);
 
-router.post("/me/selection", mustFn(galleryAuth, "galleryAuth"), mustFn(ctrl.saveMySelection, "ctrl.saveMySelection"));
+router.post(
+  "/me/selection",
+  mustFn(galleryAuth, "galleryAuth"),
+  mustFn(ctrl.saveMySelection, "ctrl.saveMySelection"),
+);
 
 router.get(
   "/me/photos/:photoId/download",
   mustFn(galleryAuth, "galleryAuth"),
-  mustFn(ctrl.downloadMyPhoto, "ctrl.downloadMyPhoto")
+  mustFn(ctrl.downloadMyPhoto, "ctrl.downloadMyPhoto"),
 );
 
 module.exports = router;

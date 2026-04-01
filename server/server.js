@@ -13,9 +13,7 @@ const reviewRoutes = require("./routes/reviewRoutes");
 
 const app = express();
 
-/* =========================
-   CORS (Vercel + Render)
-   ========================= */
+
 const allowedOrigins = [
   process.env.FRONTEND_URL,
   "http://localhost:5173",
@@ -27,8 +25,7 @@ app.use(
       if (!origin) return callback(null, true);
 
       const isAllowed =
-        allowedOrigins.includes(origin) ||
-        origin.endsWith(".vercel.app");
+        allowedOrigins.includes(origin) || origin.endsWith(".vercel.app");
 
       if (isAllowed) return callback(null, true);
 
@@ -37,28 +34,24 @@ app.use(
     methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
     allowedHeaders: ["Content-Type", "Authorization"],
     credentials: false,
-  })
+  }),
 );
 
 app.use(express.json({ limit: "10mb" }));
 
-/* =========================
-   MongoDB
-   ========================= */
+
 const MONGO_URI =
   process.env.MONGO_URI || "mongodb://127.0.0.1:27017/photo_site";
 
 mongoose
   .connect(MONGO_URI)
-  .then(() => console.log("✅ MongoDB connected"))
+  .then(() => console.log("MongoDB connected"))
   .catch((err) => {
-    console.error("❌ MongoDB connection error:", err.message);
+    console.error("MongoDB connection error:", err.message);
     process.exit(1);
   });
 
-/* =========================
-   Routes
-   ========================= */
+
 app.get("/api/health", (req, res) => {
   res.json({ ok: true });
 });
@@ -69,9 +62,6 @@ app.use("/api/admin", adminRoutes);
 app.use("/api/chat", chatRoutes);
 app.use("/api/reviews", reviewRoutes);
 
-/* =========================
-   Static (НЕ обовʼязково)
-   ========================= */
 const STATIC_DIR = path.join(__dirname, "..", "site");
 const indexPath = path.join(STATIC_DIR, "index.html");
 
@@ -85,9 +75,7 @@ if (fs.existsSync(indexPath)) {
   console.log("🟨 Static site disabled (no site/index.html)");
 }
 
-/* =========================
-   Start server
-   ========================= */
+
 const PORT = process.env.PORT || 5001;
 app.listen(PORT, "0.0.0.0", () => {
   console.log(`🚀 Server running on port ${PORT}`);

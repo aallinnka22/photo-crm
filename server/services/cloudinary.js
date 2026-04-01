@@ -13,7 +13,7 @@ function assertCloudinaryConfigured() {
     process.env.CLOUDINARY_API_SECRET;
   if (!ok) {
     throw new Error(
-      "Cloudinary is not configured. Set CLOUDINARY_CLOUD_NAME / CLOUDINARY_API_KEY / CLOUDINARY_API_SECRET in .env"
+      "Cloudinary is not configured. Set CLOUDINARY_CLOUD_NAME / CLOUDINARY_API_KEY / CLOUDINARY_API_SECRET in .env",
     );
   }
 }

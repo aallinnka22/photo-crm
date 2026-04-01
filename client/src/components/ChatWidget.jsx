@@ -20,8 +20,7 @@ export default function ChatWidget({ apiBase }) {
   const [messages, setMessages] = useState(() => [
     {
       role: "assistant",
-      text:
-        "Привіт! Я AI-помічник фотографа Аліни 🙂\nМожу підказати щодо фотосесії, образу, позування, локації, термінів готовності та бронювання.",
+      text: "Привіт! Я AI-помічник фотографа Аліни 🙂\nМожу підказати щодо фотосесії, образу, позування, локації, термінів готовності та бронювання.",
       time: nowTime(),
     },
   ]);
@@ -46,6 +45,11 @@ export default function ChatWidget({ apiBase }) {
     const q = String(messageText || "").trim();
     if (!q || loading) return;
 
+    const nextMessages = [
+      ...messages,
+      { role: "user", text: q, time: nowTime() },
+    ];
+
     push("user", q);
     setInput("");
     setLoading(true);
@@ -56,6 +60,7 @@ export default function ChatWidget({ apiBase }) {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           message: q,
+          messages: nextMessages.map(({ role, text }) => ({ role, text })),
           context: {
             brand: "Alina Photographer",
             language: "uk",
@@ -73,7 +78,7 @@ export default function ChatWidget({ apiBase }) {
       push(
         "assistant",
         data?.answer ||
-          "Вибач, не змогла відповісти. Спробуй переформулювати питання."
+          "Вибач, не зміг відповісти. Спробуй переформулювати питання.",
       );
     } catch (e) {
       push("assistant", "❌ " + (e?.message || "Помилка"));
@@ -92,27 +97,12 @@ export default function ChatWidget({ apiBase }) {
   }
 
   return (
-    <div
-      style={{
-        position: "fixed",
-        right: 18,
-        bottom: 18,
-        zIndex: 9999,
-        width: open ? 360 : "auto",
-        maxWidth: "calc(100vw - 36px)",
-        fontFamily: "inherit",
-      }}
-    >
+    <div className={`chat-widget ${open ? "is-open" : ""}`}>
       {!open ? (
         <button
-          className="btn"
+          className="btn chat-widget-toggle"
           type="button"
           onClick={() => setOpen(true)}
-          style={{
-            borderRadius: 999,
-            padding: "12px 14px",
-            boxShadow: "0 12px 30px rgba(0,0,0,0.35)",
-          }}
           title="Поставити питання"
         >
           💬 Питання?
@@ -120,30 +110,11 @@ export default function ChatWidget({ apiBase }) {
       ) : null}
 
       {open ? (
-        <div
-          className="card"
-          style={{
-            borderRadius: 18,
-            overflow: "hidden",
-            border: "1px solid rgba(255,255,255,0.10)",
-            background: "rgba(0,0,0,0.35)",
-            backdropFilter: "blur(10px)",
-            boxShadow: "0 16px 40px rgba(0,0,0,0.45)",
-          }}
-        >
-          <div
-            style={{
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "space-between",
-              gap: 10,
-              padding: "12px 12px",
-              borderBottom: "1px solid rgba(255,255,255,0.08)",
-            }}
-          >
-            <div style={{ display: "grid" }}>
-              <strong style={{ lineHeight: 1.1 }}>AI-помічник фотографа</strong>
-              <span className="muted" style={{ fontSize: 12 }}>
+        <div className="card chat-widget-card">
+          <div className="chat-widget-head">
+            <div className="chat-widget-head-text">
+              <strong className="chat-widget-title">AI-помічник фотографа</strong>
+              <span className="muted chat-widget-subtitle">
                 Відповідає на питання про фотосесію
               </span>
             </div>
@@ -159,73 +130,35 @@ export default function ChatWidget({ apiBase }) {
             </button>
           </div>
 
-          <div style={{ padding: 12 }}>
-            <div
-              style={{
-                display: "flex",
-                gap: 8,
-                flexWrap: "wrap",
-                marginBottom: 10,
-              }}
-            >
+          <div className="chat-widget-body">
+            <div className="chat-widget-suggested">
               {suggested.slice(0, 4).map((question) => (
                 <button
                   key={question}
                   type="button"
-                  className="btn"
+                  className="btn chat-widget-suggested-btn"
                   onClick={() => handlePresetClick(question)}
                   disabled={loading}
-                  style={{
-                    padding: "8px 10px",
-                    borderRadius: 999,
-                    opacity: 0.9,
-                    fontSize: 12,
-                  }}
                   title={question}
                 >
-                  {question.length > 26 ? question.slice(0, 26) + "…" : question}
+                  {question.length > 26
+                    ? question.slice(0, 26) + "…"
+                    : question}
                 </button>
               ))}
             </div>
 
-            <div
-              ref={boxRef}
-              style={{
-                height: 280,
-                overflow: "auto",
-                paddingRight: 4,
-                display: "grid",
-                gap: 10,
-              }}
-            >
+            <div ref={boxRef} className="chat-widget-messages">
               {messages.map((m, idx) => (
                 <div
                   key={idx}
-                  style={{
-                    display: "flex",
-                    justifyContent:
-                      m.role === "user" ? "flex-end" : "flex-start",
-                  }}
+                  className={`chat-widget-row ${m.role === "user" ? "is-user" : "is-assistant"}`}
                 >
                   <div
-                    style={{
-                      maxWidth: "85%",
-                      padding: "10px 12px",
-                      borderRadius: 16,
-                      border: "1px solid rgba(255,255,255,0.10)",
-                      background:
-                        m.role === "user"
-                          ? "rgba(34,197,94,0.12)"
-                          : "rgba(255,255,255,0.06)",
-                      whiteSpace: "pre-wrap",
-                      lineHeight: 1.35,
-                    }}
+                    className={`chat-widget-bubble ${m.role === "user" ? "is-user" : "is-assistant"}`}
                   >
-                    <div style={{ fontSize: 13 }}>{m.text}</div>
-                    <div
-                      className="muted"
-                      style={{ fontSize: 11, marginTop: 6 }}
-                    >
+                    <div className="chat-widget-message-text">{m.text}</div>
+                    <div className="muted chat-widget-message-time">
                       {m.time}
                     </div>
                   </div>
@@ -233,25 +166,15 @@ export default function ChatWidget({ apiBase }) {
               ))}
 
               {loading ? (
-                <div style={{ display: "flex", justifyContent: "flex-start" }}>
-                  <div
-                    style={{
-                      maxWidth: "85%",
-                      padding: "10px 12px",
-                      borderRadius: 16,
-                      border: "1px solid rgba(255,255,255,0.10)",
-                      background: "rgba(255,255,255,0.06)",
-                      lineHeight: 1.35,
-                      fontSize: 13,
-                    }}
-                  >
+                <div className="chat-widget-row is-assistant">
+                  <div className="chat-widget-bubble is-assistant chat-widget-thinking">
                     Думаю...
                   </div>
                 </div>
               ) : null}
             </div>
 
-            <div style={{ display: "grid", gap: 8, marginTop: 10 }}>
+            <div className="chat-widget-form">
               <input
                 className="input"
                 placeholder="Напишіть ваше питання..."

@@ -7,7 +7,8 @@ module.exports = function adminAuth(req, res, next) {
   try {
     const token = header.split(" ")[1];
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
-    if (decoded.role !== "admin") return res.status(403).json({ message: "Forbidden" });
+    if (decoded.role !== "admin")
+      return res.status(403).json({ message: "Forbidden" });
     req.admin = { email: decoded.email || "" };
     next();
   } catch (e) {

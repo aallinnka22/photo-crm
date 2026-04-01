@@ -12,11 +12,7 @@ module.exports = function galleryAuth(req, res, next) {
 
     // ✅ максимально сумісно з будь-яким payload
     req.galleryId =
-      decoded.galleryId ||
-      decoded.gallery ||
-      decoded._id ||
-      decoded.id ||
-      null;
+      decoded.galleryId || decoded.gallery || decoded._id || decoded.id || null;
 
     if (!req.galleryId) {
       return res.status(401).json({ message: "No galleryId in token" });

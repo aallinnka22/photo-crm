@@ -11,7 +11,6 @@ export default function HomePage() {
 
   const [tab, setTab] = useState("all");
 
-  // Booking form
   const [date, setDate] = useState(() => new Date().toISOString().slice(0, 10));
   const [time, setTime] = useState("12:30");
   const [name, setName] = useState("");
@@ -20,65 +19,56 @@ export default function HomePage() {
   const [bookMsg, setBookMsg] = useState("");
   const [bookLoading, setBookLoading] = useState(false);
 
-  // ✅ Slots (availability)
-  const [slots, setSlots] = useState([]); // [{ time: "12:00", isFree: true }]
+  const [slots, setSlots] = useState([]);
   const [slotsLoading, setSlotsLoading] = useState(false);
   const [slotsError, setSlotsError] = useState("");
 
-  // ✅ Retouch before/after (slider + auto animation)
   const retouchWrapRef = useRef(null);
-  const [retouchPos, setRetouchPos] = useState(55); // %
+  const [retouchPos, setRetouchPos] = useState(55);
   const [retouchDragging, setRetouchDragging] = useState(false);
   const [retouchInView, setRetouchInView] = useState(false);
 
-  // ✅ REVIEWS: fallback static (твій масив як було)
   const reviews = useMemo(
     () => [
       {
         name: "Марія",
         tag: "Відгук",
-        text:
-          "Дуже комфортно на зйомці. Аліна підказувала позування, все було швидко й без зайвої метушні. Фото — 🔥, виглядають природно!",
+        text: "Дуже комфортно на зйомці. Аліна підказувала позування, все було швидко й без зайвої метушні. Фото — 🔥, виглядають природно!",
         rating: 5,
         pills: ["Комфорт", "Підказки", "Природна ретуш"],
       },
       {
         name: "Анастасія",
         tag: "Відгук",
-        text:
-          "Діти взагалі не хотіли фоткатися, але якось непомітно все вийшло 🙂 Кадри живі, емоційні, і ретуш дуже акуратна.",
+        text: "Діти взагалі не хотіли фоткатися, але якось непомітно все вийшло 🙂 Кадри живі, емоційні, і ретуш дуже акуратна.",
         rating: 5,
         pills: ["Комфорт", "Підказки", "Природна ретуш"],
       },
       {
         name: "Катерина",
         tag: "Відгук",
-        text:
-          "Я хвилювалась, але було легко. Плюс — онлайн-запис реально зручний: вибрала слот, подала заявку — і все.",
+        text: "Я хвилювалась, але було легко. Плюс — онлайн-запис реально зручний: вибрала слот, подала заявку — і все.",
         rating: 5,
         pills: ["Комфорт", "Підказки", "Природна ретуш"],
       },
       {
         name: "Юлія",
         tag: "Відгук",
-        text:
-          "Зловила моменти, які ми навіть не помічали. Світло, кольори — супер. Фото отримали швидше, ніж очікували.",
+        text: "Зловила моменти, які ми навіть не помічали. Світло, кольори — супер. Фото отримали швидше, ніж очікували.",
         rating: 5,
         pills: ["Комфорт", "Підказки", "Природна ретуш"],
       },
       {
         name: "Ірина",
         tag: "Відгук",
-        text:
-          "Дуже тактовно направляє, не “ламає” в кадрі. Знімки — прям як з Pinterest, але без штучності. Рекомендую!",
+        text: "Дуже тактовно направляє, не “ламає” в кадрі. Знімки — прям як з Pinterest, але без штучності. Рекомендую!",
         rating: 5,
         pills: ["Комфорт", "Підказки", "Природна ретуш"],
       },
     ],
-    []
+    [],
   );
 
-  // ✅ REVIEWS: state for DB reviews (ADDED)
   const [dbReviews, setDbReviews] = useState([]);
   const [dbReviewsLoading, setDbReviewsLoading] = useState(false);
 
@@ -87,30 +77,45 @@ export default function HomePage() {
   const reviewsWrapRef = useRef(null);
   const [reviewsInView, setReviewsInView] = useState(false);
 
-  // ✅ REVIEWS FORM: поля для відправки відгуку в БД
   const [reviewName, setReviewName] = useState("");
   const [reviewRating, setReviewRating] = useState(5);
   const [reviewText, setReviewText] = useState("");
   const [reviewMsg, setReviewMsg] = useState("");
   const [reviewLoading, setReviewLoading] = useState(false);
 
-  // ✅ ADDED: photo for review
   const [reviewPhotoFile, setReviewPhotoFile] = useState(null);
   const [reviewPhotoPreview, setReviewPhotoPreview] = useState("");
 
-  // ✅ REVIEWS FORM: тип зйомки (ADDED)
   const SHOOT_TYPES = useMemo(
-    () => ["Портрет", "Сімейна", "Лавсторі", "Події", "Весілля", "Вінчання/Хрестини", "Інше"],
-    []
+    () => [
+      "Портрет",
+      "Сімейна",
+      "Лавсторі",
+      "Події",
+      "Весілля",
+      "Вінчання/Хрестини",
+      "Інше",
+    ],
+    [],
   );
   const [reviewShootType, setReviewShootType] = useState(SHOOT_TYPES[0]);
 
-  // ✅ REVIEWS FORM: chips (ADDED)
   const FEATURE_OPTIONS = useMemo(
-    () => ["Комфорт", "Підказки", "Природна ретуш", "Швидко", "Атмосфера", "Результат"],
-    []
+    () => [
+      "Комфорт",
+      "Підказки",
+      "Природна ретуш",
+      "Швидко",
+      "Атмосфера",
+      "Результат",
+    ],
+    [],
   );
-  const [reviewFeatures, setReviewFeatures] = useState(["Комфорт", "Підказки", "Природна ретуш"]);
+  const [reviewFeatures, setReviewFeatures] = useState([
+    "Комфорт",
+    "Підказки",
+    "Природна ретуш",
+  ]);
 
   function toggleFeature(label) {
     setReviewFeatures((prev) => {
@@ -136,23 +141,27 @@ export default function HomePage() {
     const el = retouchWrapRef.current;
     if (!el) return;
 
-    const obs = new IntersectionObserver(([entry]) => setRetouchInView(entry.isIntersecting), { threshold: 0.35 });
+    const obs = new IntersectionObserver(
+      ([entry]) => setRetouchInView(entry.isIntersecting),
+      { threshold: 0.35 },
+    );
 
     obs.observe(el);
     return () => obs.disconnect();
   }, []);
 
-  // ✅ REVIEWS: detect in-view
   useEffect(() => {
     const el = reviewsWrapRef.current;
     if (!el) return;
 
-    const obs = new IntersectionObserver(([entry]) => setReviewsInView(entry.isIntersecting), { threshold: 0.25 });
+    const obs = new IntersectionObserver(
+      ([entry]) => setReviewsInView(entry.isIntersecting),
+      { threshold: 0.25 },
+    );
     obs.observe(el);
     return () => obs.disconnect();
   }, []);
 
-  // ✅ REVIEWS: load from DB (ADDED)
   useEffect(() => {
     let alive = true;
 
@@ -161,22 +170,28 @@ export default function HomePage() {
       try {
         const res = await fetch(`${API_BASE}/reviews?limit=50`);
         const data = await res.json().catch(() => ({}));
-        if (!res.ok) throw new Error(data?.message || "Помилка отримання відгуків");
+        if (!res.ok)
+          throw new Error(data?.message || "Помилка отримання відгуків");
 
         const items = Array.isArray(data?.reviews) ? data.reviews : [];
         const mapped = items.map((it) => ({
           _id: it?._id,
           name: it?.name || "Клієнт",
           tag: "Відгук",
-          shootType: it?.shootType || it?.shootingType || it?.sessionType || it?.type || "",
+          shootType:
+            it?.shootType ||
+            it?.shootingType ||
+            it?.sessionType ||
+            it?.type ||
+            "",
           text: it?.text || "",
           rating: Number(it?.rating || 5),
           photoUrl: it?.photoUrl || "",
           pills: Array.isArray(it?.features)
             ? it.features
             : Array.isArray(it?.tags)
-            ? it.tags
-            : ["Комфорт", "Підказки", "Природна ретуш"],
+              ? it.tags
+              : ["Комфорт", "Підказки", "Природна ретуш"],
         }));
 
         if (alive) setDbReviews(mapped);
@@ -193,7 +208,6 @@ export default function HomePage() {
     };
   }, [API_BASE]);
 
-  // ✅ Use DB reviews if exist, otherwise fallback static
   const allReviews = dbReviews?.length ? dbReviews : reviews;
 
   useEffect(() => {
@@ -202,7 +216,6 @@ export default function HomePage() {
     if (revIndex > len - 1) setRevIndex(0);
   }, [allReviews?.length, revIndex]);
 
-  // ✅ REVIEWS: auto-advance
   useEffect(() => {
     if (revPaused) return;
     if (!reviewsInView) return;
@@ -259,7 +272,8 @@ export default function HomePage() {
     { cat: "event", src: "/images/IMG_2714.jpg", alt: "event" },
   ];
 
-  const filteredPhotos = tab === "all" ? photos : photos.filter((p) => p.cat === tab);
+  const filteredPhotos =
+    tab === "all" ? photos : photos.filter((p) => p.cat === tab);
 
   function scrollToId(id) {
     const el = document.getElementById(id);
@@ -267,16 +281,17 @@ export default function HomePage() {
     el.scrollIntoView({ behavior: "smooth", block: "start" });
   }
 
-  // ✅ завантаження слотів на дату
   async function loadSlots(dateStr) {
     if (!dateStr) return;
     setSlotsError("");
     setSlotsLoading(true);
 
     try {
-      const res = await fetch(`${API_BASE}/bookings/availability?date=${encodeURIComponent(dateStr)}`);
+      const res = await fetch(
+        `${API_BASE}/bookings/availability?date=${encodeURIComponent(dateStr)}`,
+      );
       const data = await res.json().catch(() => ({}));
-      if (!res.ok) throw new Error(data?.message || "Помилка отримання слотів");
+      if (!res.ok) throw new Error(data?.message || "Помилка отримання часу");
 
       const list = Array.isArray(data?.slots) ? data.slots : [];
       setSlots(list);
@@ -303,18 +318,18 @@ export default function HomePage() {
     setBookMsg("");
 
     if (!date || !time || !name.trim() || !contact.trim()) {
-      setBookMsg("❌ Заповніть дату, час, імʼя та контакт.");
+      setBookMsg("Заповніть дату, час, імʼя та контакт.");
       return;
     }
 
     if (slots?.length) {
       const slot = slots.find((s) => s?.time === time);
       if (!slot) {
-        setBookMsg("❌ Оберіть час зі списку доступних слотів.");
+        setBookMsg("Оберіть час зі списку доступних слотів.");
         return;
       }
       if (!slot.isFree) {
-        setBookMsg("❌ Цей час вже зайнятий. Оберіть інший час.");
+        setBookMsg("Цей час вже зайнятий. Оберіть інший час.");
         return;
       }
     }
@@ -336,7 +351,10 @@ export default function HomePage() {
       const data = await res.json().catch(() => ({}));
       if (!res.ok) throw new Error(data?.message || "Помилка бронювання");
 
-      setBookMsg(data?.message || "✅ Заявку відправлено! Я звʼяжусь з вами для підтвердження.");
+      setBookMsg(
+        data?.message ||
+          "Заявку відправлено! Я звʼяжусь з вами для підтвердження.",
+      );
       setName("");
       setContact("");
       await loadSlots(date);
@@ -347,7 +365,6 @@ export default function HomePage() {
     }
   }
 
-  // ✅ REVIEWS FORM submit: відправка відгуку в БД + optional photo
   async function submitReview() {
     setReviewMsg("");
 
@@ -356,16 +373,16 @@ export default function HomePage() {
     const rt = Number(reviewRating);
 
     if (!nm || !tx) {
-      setReviewMsg("❌ Заповніть імʼя та текст відгуку.");
+      setReviewMsg("Заповніть імʼя та текст відгуку.");
       return;
     }
     if (!Number.isFinite(rt) || rt < 1 || rt > 5) {
-      setReviewMsg("❌ Оцінка має бути від 1 до 5.");
+      setReviewMsg(" Оцінка має бути від 1 до 5.");
       return;
     }
 
     if (reviewPhotoFile && reviewPhotoFile.size > 5 * 1024 * 1024) {
-      setReviewMsg("❌ Фото має бути до 5 МБ.");
+      setReviewMsg("Фото має бути до 5 МБ.");
       return;
     }
 
@@ -390,13 +407,14 @@ export default function HomePage() {
       });
 
       const data = await res.json().catch(() => ({}));
-      if (!res.ok) throw new Error(data?.message || "Помилка відправки відгуку");
+      if (!res.ok)
+        throw new Error(data?.message || "Помилка відправки відгуку");
 
       setReviewMsg(data?.message || "Дякую! Відгук відправлено ☺️");
       setReviewName("");
       setReviewRating(5);
       setReviewText("");
-      setReviewFeatures(["Комфорт", "Підказки", "Природна ретуш"]);
+      setReviewFeatures(["Комфорт", "Підказки"]);
       setReviewShootType(SHOOT_TYPES[0]);
       setReviewPhotoFile(null);
       setReviewPhotoPreview("");
@@ -413,7 +431,11 @@ export default function HomePage() {
     const len = allReviews?.length || 0;
     if (!len) return [];
     if (len === 1) return [allReviews[0]];
-    if (len === 2) return [allReviews[safeMod(revIndex, len)], allReviews[safeMod(revIndex + 1, len)]];
+    if (len === 2)
+      return [
+        allReviews[safeMod(revIndex, len)],
+        allReviews[safeMod(revIndex + 1, len)],
+      ];
     return [
       allReviews[safeMod(revIndex, len)],
       allReviews[safeMod(revIndex + 1, len)],
@@ -421,7 +443,8 @@ export default function HomePage() {
     ];
   })();
 
-  const initials = (n = "") => (String(n).trim().slice(0, 1) || "A").toUpperCase();
+  const initials = (n = "") =>
+    (String(n).trim().slice(0, 1) || "A").toUpperCase();
 
   return (
     <>
@@ -512,11 +535,16 @@ export default function HomePage() {
           <div>
             <h2 className="title">Light, emotion, precision.</h2>
             <p className="lead">
-              Я – Аліна, фотограф. Люблю знімати людей, емоції та моменти, які хочеться пам’ятати.
+              Я – Аліна, фотограф. Люблю знімати людей, емоції та моменти, які
+              хочеться пам’ятати.
             </p>
 
             <div className="cta-row">
-              <button className="btn" type="button" onClick={() => scrollToId("booking")}>
+              <button
+                className="btn"
+                type="button"
+                onClick={() => scrollToId("booking")}
+              >
                 Забронювати дату
               </button>
 
@@ -530,14 +558,23 @@ export default function HomePage() {
                 @ashch.phh
               </a>
 
-              <button className="btn" type="button" onClick={() => scrollToId("services")}>
+              <button
+                className="btn"
+                type="button"
+                onClick={() => scrollToId("services")}
+              >
                 Послуги та ціни
               </button>
             </div>
           </div>
 
           <div className="hero-photo">
-            <img src="/images/alina.jpg" alt="Alina" loading="eager" decoding="async" />
+            <img
+              src="/images/alina.jpg"
+              alt="Alina"
+              loading="eager"
+              decoding="async"
+            />
           </div>
         </section>
 
@@ -546,8 +583,12 @@ export default function HomePage() {
           <div className="grid cols-2">
             <div className="card">
               <p className="muted">
-                Під час зйомки допомагаю з позуванням, підбором локацій та образів, щоб ви почувалися легко й природно перед камерою.
-                Атмосфера на зйомці завжди спокійна й невимушена, тому люди швидко забувають про хвилювання. У кадрі для мене важливі справжні емоції, атмосфера моменту та деталі, які роблять фотографії живими.
+                Під час зйомки допомагаю з позуванням, підбором локацій та
+                образів, щоб ви почувалися легко й природно перед камерою.
+                Атмосфера на зйомці завжди спокійна й невимушена, тому люди
+                швидко забувають про хвилювання. У кадрі для мене важливі
+                справжні емоції, атмосфера моменту та деталі, які роблять
+                фотографії живими.
               </p>
               <div className="chips">
                 <span className="chip">Портрет</span>
@@ -568,278 +609,145 @@ export default function HomePage() {
           </div>
         </section>
 
-       <section id="reviews" ref={reviewsWrapRef}>
-  <div className="reviews-head">
-    <div>
-      <h3 className="section-title" style={{ marginBottom: 6 }}>
-        Відгуки клієнтів
-      </h3>
-      <div className="muted" style={{ fontSize: 14 }}>
-        {dbReviewsLoading ? <span style={{ marginLeft: 8 }}>• Завантажую…</span> : null}
-      </div>
-    </div>
-
-    <div className="reviews-actions">
-      <button className="btn" type="button" onClick={() => scrollToId("leave-review")} title="Залишити відгук">
-        Залишити відгук
-      </button>
-      <button className="btn" type="button" onClick={() => scrollToId("booking")} title="Записатися">
-        Записатися
-      </button>
-    </div>
-  </div>
-
-  <div
-    className={`reviews-grid ${reviewsInView ? "rev-in" : ""}`}
-    onMouseEnter={() => setRevPaused(true)}
-    onMouseLeave={() => setRevPaused(false)}
-    style={{ marginTop: 14 }}
-  >
-    {visibleReviews.map((r, idx) => (
-      <div className="card review-card" key={`${r?._id || "local"}-${revIndex}-${idx}`}>
-        <div className="review-top">
-       {r?.photoUrl ? (
-  <img
-    src={r.photoUrl}
-    alt={r?.name || "Клієнт"}
-    style={{
-      width: 42,
-      height: 42,
-      minWidth: 42,
-      minHeight: 42,
-      maxWidth: 42,
-      maxHeight: 42,
-      borderRadius: "999px",
-      objectFit: "cover",
-      display: "block",
-      flex: "0 0 42px",
-      overflow: "hidden",
-      border: "1px solid rgba(255,255,255,0.14)",
-    }}
-  />
-) : (
-  <div className="review-avatar" aria-hidden="true">
-    {initials(r?.name)}
-  </div>
-)}
-
-          <div style={{ minWidth: 0 }}>
-            <div className="review-name">{r?.name}</div>
-            <div className="muted review-tag">{r?.tag || "Відгук"}</div>
-
-            {r?.shootType ? (
-              <div className="muted review-tag" style={{ marginTop: 4 }}>
-                Тип зйомки: <b>{r.shootType}</b>
+        <section id="reviews" ref={reviewsWrapRef}>
+          <div className="reviews-head">
+            <div>
+              <h3 className="section-title reviews-title">Відгуки клієнтів</h3>
+              <div className="muted reviews-status">
+                {dbReviewsLoading ? (
+                  <span className="reviews-loading"></span>
+                ) : null}
               </div>
-            ) : null}
+            </div>
+
+            <div className="reviews-actions">
+              <button
+                className="btn"
+                type="button"
+                onClick={() => scrollToId("leave-review")}
+                title="Залишити відгук"
+              >
+                Залишити відгук
+              </button>
+              <button
+                className="btn"
+                type="button"
+                onClick={() => scrollToId("booking")}
+                title="Записатися"
+              >
+                Записатися
+              </button>
+            </div>
           </div>
 
-          <div className="review-stars" aria-label={`Оцінка: ${r?.rating || 5} з 5`}>
-            {Array.from({ length: 5 }).map((_, sIdx) => (
-              <span key={sIdx} className={`star ${sIdx < (r?.rating || 5) ? "on" : ""}`} aria-hidden="true">
-                ★
-              </span>
+          <div
+            className={`reviews-grid reviews-grid-offset ${reviewsInView ? "rev-in" : ""}`}
+            onMouseEnter={() => setRevPaused(true)}
+            onMouseLeave={() => setRevPaused(false)}
+          >
+            {visibleReviews.map((r, idx) => (
+              <div
+                className="card review-card"
+                key={`${r?._id || "local"}-${revIndex}-${idx}`}
+              >
+                <div className="review-top">
+                  {r?.photoUrl ? (
+                    <img
+                      src={r.photoUrl}
+                      alt={r?.name || "Клієнт"}
+                      className="review-avatar-photo"
+                    />
+                  ) : (
+                    <div className="review-avatar" aria-hidden="true">
+                      {initials(r?.name)}
+                    </div>
+                  )}
+
+                  <div className="review-meta">
+                    <div className="review-name">{r?.name}</div>
+                    <div className="muted review-tag">{r?.tag || "Відгук"}</div>
+
+                    {r?.shootType ? (
+                      <div className="muted review-tag review-shoot-type">
+                        Тип зйомки: <b>{r.shootType}</b>
+                      </div>
+                    ) : null}
+                  </div>
+
+                  <div
+                    className="review-stars"
+                    aria-label={`Оцінка: ${r?.rating || 5} з 5`}
+                  >
+                    {Array.from({ length: 5 }).map((_, sIdx) => (
+                      <span
+                        key={sIdx}
+                        className={`star ${sIdx < (r?.rating || 5) ? "on" : ""}`}
+                        aria-hidden="true"
+                      >
+                        ★
+                      </span>
+                    ))}
+                  </div>
+                </div>
+
+                <p className="muted review-text">{r?.text}</p>
+
+                <div className="review-bottom">
+                  {(Array.isArray(r?.pills) ? r.pills : []).map((p, pIdx) => (
+                    <span className="pill" key={`${p}-${pIdx}`}>
+                      ✓ {p}
+                    </span>
+                  ))}
+                </div>
+              </div>
             ))}
           </div>
-        </div>
 
-        <p className="muted review-text">{r?.text}</p>
-
-        <div className="review-bottom">
-          {(Array.isArray(r?.pills) ? r.pills : []).map((p, pIdx) => (
-            <span className="pill" key={`${p}-${pIdx}`}>
-              ✓ {p}
-            </span>
-          ))}
-        </div>
-      </div>
-    ))}
-  </div>
-
-  <div className="reviews-dots" style={{ marginTop: 12 }}>
-    {allReviews.map((_, i) => (
-      <button
-        key={i}
-        type="button"
-        className={`dot ${i === revIndex ? "active" : ""}`}
-        onClick={() => setRevIndex(i)}
-        aria-label={`Показати відгук ${i + 1}`}
-        onMouseEnter={() => setRevPaused(true)}
-        onMouseLeave={() => setRevPaused(false)}
-      />
-    ))}
-  </div>
-
-  <style>{`
-    .reviews-head{
-      display:flex;
-      align-items:flex-end;
-      justify-content:space-between;
-      gap:14px;
-      flex-wrap:wrap;
-      margin-top: 6px;
-    }
-    .reviews-actions{
-      display:flex;
-      gap:10px;
-      flex-wrap:wrap;
-      align-items:center;
-    }
-    .reviews-grid{
-      display:grid;
-      grid-template-columns: repeat(3, minmax(0, 1fr));
-      gap:14px;
-    }
-    @media (max-width: 980px){
-      .reviews-grid{ grid-template-columns: 1fr; }
-    }
-
-    .review-card{
-      position:relative;
-      overflow:hidden;
-      transform: translateY(6px);
-      opacity: 0.92;
-      transition: transform .28s ease, opacity .28s ease;
-      background: rgba(0,0,0,0.18);
-      border: 1px solid rgba(255,255,255,0.10);
-    }
-    .rev-in .review-card{
-      animation: revPop .45s ease both;
-    }
-    .rev-in .review-card:nth-child(2){ animation-delay: .06s; }
-    .rev-in .review-card:nth-child(3){ animation-delay: .12s; }
-
-    @keyframes revPop{
-      from { transform: translateY(10px); opacity: 0.0; }
-      to   { transform: translateY(0px);  opacity: 1.0; }
-    }
-
-    .review-card:hover{
-      transform: translateY(-2px);
-      opacity: 1;
-    }
-
-    .review-top{
-      display:flex;
-      gap:12px;
-      align-items:center;
-      margin-bottom: 10px;
-    }
-    .review-avatar{
-      width:42px;
-      height:42px;
-      border-radius: 999px;
-      display:grid;
-      place-items:center;
-      font-weight: 700;
-      letter-spacing: 0.4px;
-      background: rgba(255,255,255,0.10);
-      border: 1px solid rgba(255,255,255,0.14);
-      flex: 0 0 auto;
-    }
-    .review-avatar-photo{
-      width:42px;
-      height:42px;
-      border-radius:999px;
-      object-fit:cover;
-      display:block;
-      border: 1px solid rgba(255,255,255,0.14);
-      flex: 0 0 auto;
-    }
-    .review-name{
-      font-weight: 700;
-      line-height: 1.2;
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
-      max-width: 240px;
-    }
-    .review-tag{
-      font-size: 12px;
-      opacity: 0.85;
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
-      max-width: 260px;
-    }
-    .review-stars{
-      display:flex;
-      gap:2px;
-      flex: 0 0 auto;
-      margin-left: auto;
-      opacity: .95;
-    }
-    .star{
-      font-size: 14px;
-      opacity: .35;
-      transform: translateY(-1px);
-    }
-    .star.on{
-      opacity: 1;
-      text-shadow: 0 0 18px rgba(255,255,255,0.20);
-    }
-    .review-text{
-      margin: 0;
-      font-size: 14px;
-      line-height: 1.55;
-    }
-    .review-bottom{
-      display:flex;
-      gap:8px;
-      flex-wrap:wrap;
-      margin-top: 12px;
-    }
-    .pill{
-      font-size: 12px;
-      padding: 6px 10px;
-      border-radius: 999px;
-      border: 1px solid rgba(255,255,255,0.12);
-      background: rgba(0,0,0,0.22);
-      opacity: 0.9;
-    }
-
-    .reviews-dots{
-      display:flex;
-      gap:8px;
-      justify-content:center;
-      align-items:center;
-      flex-wrap:wrap;
-      user-select:none;
-    }
-    .dot{
-      width: 10px;
-      height: 10px;
-      border-radius: 999px;
-      border: 1px solid rgba(255,255,255,0.22);
-      background: rgba(255,255,255,0.08);
-      cursor:pointer;
-      transition: transform .18s ease, opacity .18s ease, width .18s ease;
-      opacity: .75;
-    }
-    .dot:hover{ transform: scale(1.12); opacity: 1; }
-    .dot.active{
-      width: 26px;
-      opacity: 1;
-      background: rgba(255,255,255,0.22);
-      border-color: rgba(255,255,255,0.30);
-    }
-  `}</style>
-</section>
+          <div className="reviews-dots reviews-dots-offset">
+            {allReviews.map((_, i) => (
+              <button
+                key={i}
+                type="button"
+                className={`dot ${i === revIndex ? "active" : ""}`}
+                onClick={() => setRevIndex(i)}
+                aria-label={`Показати відгук ${i + 1}`}
+                onMouseEnter={() => setRevPaused(true)}
+                onMouseLeave={() => setRevPaused(false)}
+              />
+            ))}
+          </div>
+        </section>
 
         <section id="portfolio">
           <h3 className="section-title">Портфоліо</h3>
 
           <div className="tabs">
-            <button className={`tab ${tab === "all" ? "active" : ""}`} onClick={() => setTab("all")} type="button">
+            <button
+              className={`tab ${tab === "all" ? "active" : ""}`}
+              onClick={() => setTab("all")}
+              type="button"
+            >
               Усе
             </button>
-            <button className={`tab ${tab === "portrait" ? "active" : ""}`} onClick={() => setTab("portrait")} type="button">
+            <button
+              className={`tab ${tab === "portrait" ? "active" : ""}`}
+              onClick={() => setTab("portrait")}
+              type="button"
+            >
               Портрет
             </button>
-            <button className={`tab ${tab === "family" ? "active" : ""}`} onClick={() => setTab("family")} type="button">
+            <button
+              className={`tab ${tab === "family" ? "active" : ""}`}
+              onClick={() => setTab("family")}
+              type="button"
+            >
               Сімейна
             </button>
-            <button className={`tab ${tab === "event" ? "active" : ""}`} onClick={() => setTab("event")} type="button">
+            <button
+              className={`tab ${tab === "event" ? "active" : ""}`}
+              onClick={() => setTab("event")}
+              type="button"
+            >
               Події
             </button>
           </div>
@@ -863,7 +771,10 @@ export default function HomePage() {
                 <span className="num">750</span>
                 <span className="u">грн</span>
               </div>
-              <p className="muted">40 фото у ретуші. Надаю можливість особисто відібрати фотографії на ретуш</p>
+              <p className="muted">
+                40 фото у ретуші. Надаю можливість особисто відібрати фотографії
+                на ретуш
+              </p>
               <button
                 className="btn"
                 type="button"
@@ -939,7 +850,9 @@ export default function HomePage() {
                 <span className="num">1000</span>
                 <span className="u">грн</span>
               </div>
-              <p className="muted">Близько 1,5 години. Ключові моменти + міні-сесія.</p>
+              <p className="muted">
+                Близько 1,5 години. Ключові моменти + міні-сесія.
+              </p>
               <button
                 className="btn"
                 type="button"
@@ -959,7 +872,11 @@ export default function HomePage() {
                 <span className="u">грн</span>
               </div>
               <p className="muted">1 фото в професійній ретуші.</p>
-              <button className="btn" type="button" onClick={() => scrollToId("retouch")}>
+              <button
+                className="btn"
+                type="button"
+                onClick={() => scrollToId("retouch")}
+              >
                 Переглянути
               </button>
             </div>
@@ -971,29 +888,26 @@ export default function HomePage() {
 
           <div className="booking">
             <div className="calendar card">
-              <div className="cal-head" style={{ justifyContent: "center" }}>
+              <div className="cal-head cal-head-center">
                 <strong>Оберіть дату та час</strong>
               </div>
 
-              <div style={{ display: "grid", gap: 12, paddingTop: 12 }}>
+              <div className="booking-fields">
                 <div>
                   <label className="muted label">Дата</label>
-                  <input className="input" type="date" value={date} onChange={(e) => setDate(e.target.value)} />
+                  <input
+                    className="input"
+                    type="date"
+                    value={date}
+                    onChange={(e) => setDate(e.target.value)}
+                  />
                 </div>
 
                 <div>
                   <label className="muted label">Час</label>
 
-                  <div
-                    className="card"
-                    style={{
-                      padding: 12,
-                      borderRadius: 14,
-                      border: "1px solid rgba(255,255,255,0.10)",
-                      background: "rgba(0,0,0,0.18)",
-                    }}
-                  >
-                    <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+                  <div className="card booking-slots-box">
+                    <div className="booking-slots-list">
                       {(slots || []).map((s) => (
                         <button
                           key={s.time}
@@ -1001,12 +915,15 @@ export default function HomePage() {
                           className="btn"
                           onClick={() => setTime(s.time)}
                           disabled={!s.isFree}
-                          title={!s.isFree ? "Вже зайнято" : "Вільний слот"}
+                          title={!s.isFree ? "Вже зайнято" : "Вільний "}
                           style={{
                             padding: "8px 10px",
                             opacity: s.isFree ? 1 : 0.35,
                             cursor: s.isFree ? "pointer" : "not-allowed",
-                            border: time === s.time ? "2px solid rgba(34,197,94,0.85)" : "1px solid rgba(255,255,255,0.12)",
+                            border:
+                              time === s.time
+                                ? "2px solid rgba(143, 176, 255, 0.55)"
+                                : "1px solid rgba(255,255,255,0.12)",
                             background: "transparent",
                           }}
                         >
@@ -1016,20 +933,18 @@ export default function HomePage() {
                     </div>
 
                     {slotsLoading ? (
-                      <div className="muted" style={{ marginTop: 8, fontSize: 12 }}>
+                      <div className="muted booking-note">
                         Завантажується час, зачекайте, будь ласка...
                       </div>
                     ) : null}
 
                     {slotsError ? (
-                      <div className="muted" style={{ marginTop: 8, fontSize: 12 }}>
-                        ❌ {slotsError}
-                      </div>
+                      <div className="muted booking-note"> {slotsError}</div>
                     ) : null}
 
                     {!slotsLoading && !slotsError && !slots.length ? (
-                      <div className="muted" style={{ marginTop: 8, fontSize: 12 }}>
-                        Немає слотів для цієї дати.
+                      <div className="muted booking-note">
+                        Немає часу для цієї дати.
                       </div>
                     ) : null}
                   </div>
@@ -1040,8 +955,13 @@ export default function HomePage() {
             <div className="slots card">
               <h4>Дані бронювання</h4>
 
-              <div className="row" style={{ marginTop: 10 }}>
-                <input className="input" placeholder="Ваше імʼя" value={name} onChange={(e) => setName(e.target.value)} />
+              <div className="row booking-row">
+                <input
+                  className="input"
+                  placeholder="Ваше імʼя"
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
+                />
                 <input
                   className="input"
                   placeholder="Instagram або телефон"
@@ -1050,10 +970,12 @@ export default function HomePage() {
                 />
               </div>
 
-              <label className="muted label" style={{ marginTop: 12 }}>
-                Пакет
-              </label>
-              <select className="input" value={pkg} onChange={(e) => setPkg(e.target.value)}>
+              <label className="muted label booking-label-top">Пакет</label>
+              <select
+                className="input"
+                value={pkg}
+                onChange={(e) => setPkg(e.target.value)}
+              >
                 <option>Індивідуальна 1 год — 750 грн</option>
                 <option>Індивідуальна 30 хв — 500 грн</option>
                 <option>Сімейна 1 год — 850 грн</option>
@@ -1062,22 +984,21 @@ export default function HomePage() {
               </select>
 
               <button
-                className="btn wide"
+                className="btn wide booking-submit"
                 type="button"
-                style={{ marginTop: 12 }}
                 onClick={submitBooking}
                 disabled={bookLoading || slotsLoading}
               >
-                {bookLoading ? "Відправляю..." : "Підтвердити бронювання"}
+                { "Підтвердити бронювання"}
               </button>
 
               {bookMsg ? (
-                <p className="muted" style={{ marginTop: 8 }}>
-                  {bookMsg}
-                </p>
+                <p className="muted booking-message">{bookMsg}</p>
               ) : null}
 
-              <p className="muted hint">* Після заявки я звʼяжусь з вами для узгодження деталей.</p>
+              <p className="muted hint">
+                * Після заявки я звʼяжусь з вами для узгодження деталей.
+              </p>
             </div>
           </div>
         </section>
@@ -1095,7 +1016,7 @@ export default function HomePage() {
                 Перейти в кабінет
               </Link>
               <hr className="sep" />
-              <p className="muted" style={{ marginTop: 8, fontSize: 12 }}>
+              <p className="muted client-code-note">
                 Код доступу видаю після зйомки.
               </p>
             </div>
@@ -1104,8 +1025,14 @@ export default function HomePage() {
               <h4>Що є всередині</h4>
               <ul className="muted">
                 <li>Завантажити фото ви можете протягом 1 місяця.</li>
-                <li>Поставте лайк і, за бажанням, напишіть коментар, під час вибору фотографій на ретуш .</li>
-                <li>Зручне завантаження фотографій, ви можете завантажити однією кнопкою всі фото.</li>
+                <li>
+                  Поставте лайк і, за бажанням, напишіть коментар, під час
+                  вибору фотографій на ретуш .
+                </li>
+                <li>
+                  Зручне завантаження фотографій, ви можете завантажити однією
+                  кнопкою всі фото.
+                </li>
               </ul>
             </div>
           </div>
@@ -1114,15 +1041,16 @@ export default function HomePage() {
         <section id="retouch">
           <h3 className="section-title">Ретуш: до / після</h3>
 
-          <div className="grid cols-2">
-            <div className="card">
-              <h4 style={{ marginTop: 0 }}>Акуратна ретуш без “пластика”</h4>
+          <div className="grid cols-1">
+           <div className="card retouch-text-card">
+              <h4 className="retouch-title">Акуратна ретуш без “пластики”</h4>
               <p className="muted">
-                Чистка шкіри, легке вирівнювання тону, робота з кольором та світлом так, щоб фото виглядали природно.
-                Якщо хочеш “глянець” або навпаки максимально натурально – це узгоджується.
+                Чистка шкіри, легке вирівнювання тону, робота з кольором та
+                світлом так, щоб фото виглядали природно. Якщо хочеш “глянець”
+                або навпаки максимально натурально – це узгоджується.
               </p>
 
-              <ul className="muted" style={{ marginTop: 10 }}>
+              <ul className="muted retouch-list">
                 <li>Збереження текстури шкіри</li>
                 <li>Корекція кольору та контрасту</li>
                 <li>Локальні правки (очі/волосся/деталі)</li>
@@ -1230,69 +1158,18 @@ export default function HomePage() {
                     pointerEvents: "none",
                   }}
                 >
-                  <div style={{ display: "flex", gap: 6, alignItems: "center", opacity: 0.95 }}>
-                    <span style={{ fontSize: 16, lineHeight: 1 }}>◀</span>
-                    <span style={{ fontSize: 12, lineHeight: 1, letterSpacing: 0.6 }}></span>
-                    <span style={{ fontSize: 16, lineHeight: 1 }}>▶</span>
+                  <div className="ba-handle-inner">
+                    <span className="ba-handle-arrow">◀</span>
+                    <span className="ba-handle-gap"></span>
+                    <span className="ba-handle-arrow">▶</span>
                   </div>
                 </div>
 
-                <div
-                  style={{
-                    position: "absolute",
-                    left: 12,
-                    top: 12,
-                    padding: "6px 10px",
-                    borderRadius: 999,
-                    background: "rgba(0,0,0,0.45)",
-                    border: "1px solid rgba(255,255,255,0.18)",
-                    fontSize: 12,
-                  }}
-                >
-                  До
-                </div>
-                <div
-                  style={{
-                    position: "absolute",
-                    right: 12,
-                    top: 12,
-                    padding: "6px 10px",
-                    borderRadius: 999,
-                    background: "rgba(0,0,0,0.45)",
-                    border: "1px solid rgba(255,255,255,0.18)",
-                    fontSize: 12,
-                  }}
-                >
-                  Після
-                </div>
+                <div className="ba-label ba-label-left">До</div>
+                <div className="ba-label ba-label-right">Після</div>
               </div>
 
-              <style>{`
-                .ba-wrap.ba-inview:not(.ba-dragging) .ba-after {
-                  animation: baSweep 2.8s ease-in-out infinite alternate;
-                }
-                .ba-wrap.ba-inview:not(.ba-dragging) .ba-divider,
-                .ba-wrap.ba-inview:not(.ba-dragging) .ba-handle {
-                  animation: baSweepLine 2.8s ease-in-out infinite alternate;
-                }
-
-                @keyframes baSweep {
-                  0%   { width: 18%; }
-                  100% { width: 86%; }
-                }
-                @keyframes baSweepLine {
-                  0%   { left: 18%; }
-                  100% { left: 86%; }
-                }
-
-                .ba-wrap.ba-dragging .ba-after,
-                .ba-wrap.ba-dragging .ba-divider,
-                .ba-wrap.ba-dragging .ba-handle {
-                  animation: none !important;
-                }
-              `}</style>
-
-              <div className="muted" style={{ marginTop: 10, fontSize: 12 }}></div>
+              <div className="muted retouch-note"></div>
             </div>
           </div>
         </section>
@@ -1303,7 +1180,8 @@ export default function HomePage() {
           <div className="leave-review-center">
             <div className="card leave-review-card">
               <p className="muted leave-review-intro">
-                Якщо вам сподобалась зйомка, напишіть короткий відгук. Це дуже допомагає ❤️
+                Якщо вам сподобалась зйомка, напишіть короткий відгук. Це дуже
+                допомагає ❤️
               </p>
 
               <div className="leave-review-stack">
@@ -1358,7 +1236,9 @@ export default function HomePage() {
                 </div>
 
                 <div className="leave-review-field">
-                  <label className="muted label">Що сподобалось (можна обрати декілька)</label>
+                  <label className="muted label">
+                    Що сподобалось (можна обрати декілька)
+                  </label>
 
                   <div className="leave-review-features">
                     {FEATURE_OPTIONS.map((opt) => {
@@ -1381,62 +1261,71 @@ export default function HomePage() {
                 </div>
 
                 <div className="leave-review-field">
-                  <label className="muted label">Фото (необов’язково)</label>
-                  <input
-                    className="input"
-                    type="file"
-                    accept="image/jpeg,image/png,image/webp"
-                    onChange={(e) => {
-                      const file = e.target.files?.[0];
-                      if (!file) return;
+  <label className="muted label"></label>
 
-                      if (!["image/jpeg", "image/png", "image/webp"].includes(file.type)) {
-                        setReviewMsg("❌ Дозволені тільки JPG, PNG, WEBP.");
-                        return;
-                      }
+  <div className="review-file-upload">
+    <label htmlFor="review-photo-input" className="btn review-file-btn">
+      Вибрати фото зі зйомки
+    </label>
 
-                      if (file.size > 5 * 1024 * 1024) {
-                        setReviewMsg("❌ Фото має бути до 5 МБ.");
-                        return;
-                      }
+    <input
+      id="review-photo-input"
+      className="review-file-input"
+      type="file"
+      accept="image/jpeg,image/png,image/webp"
+      onChange={(e) => {
+        const file = e.target.files?.[0];
+        if (!file) return;
 
-                      setReviewMsg("");
-                      setReviewPhotoFile(file);
-                      setReviewPhotoPreview(URL.createObjectURL(file));
-                    }}
-                  />
+        if (!["image/jpeg", "image/png", "image/webp"].includes(file.type)) {
+          setReviewMsg("Дозволені тільки JPG, PNG, WEBP.");
+          return;
+        }
 
-                  {reviewPhotoPreview ? (
-                    <div style={{ marginTop: 10 }}>
-                      <img
-                        src={reviewPhotoPreview}
-                        alt="Попередній перегляд"
-                        style={{
-                          width: "100%",
-                          maxHeight: 260,
-                          objectFit: "cover",
-                          borderRadius: 16,
-                          display: "block",
-                        }}
-                      />
-                      <button
-                        className="btn"
-                        type="button"
-                        style={{ marginTop: 10 }}
-                        onClick={() => {
-                          setReviewPhotoFile(null);
-                          setReviewPhotoPreview("");
-                        }}
-                      >
-                        Прибрати фото
-                      </button>
-                    </div>
-                  ) : null}
-                </div>
+        if (file.size > 5 * 1024 * 1024) {
+          setReviewMsg("Фото має бути до 5 МБ.");
+          return;
+        }
+
+        setReviewMsg("");
+        setReviewPhotoFile(file);
+        setReviewPhotoPreview(URL.createObjectURL(file));
+      }}
+    />
+
+    {reviewPhotoFile ? (
+      <div className="review-file-name">{reviewPhotoFile.name}</div>
+    ) : (
+      <div className="review-file-hint">*необовʼязково</div>
+    )}
+  </div>
+
+  {reviewPhotoPreview ? (
+    <div className="review-photo-preview-wrap">
+      <img
+        src={reviewPhotoPreview}
+        alt="Попередній перегляд"
+        className="review-photo-preview"
+      />
+      <button
+        className="btn review-photo-remove"
+        type="button"
+        onClick={() => {
+          setReviewPhotoFile(null);
+          setReviewPhotoPreview("");
+          const input = document.getElementById("review-photo-input");
+          if (input) input.value = "";
+        }}
+      >
+        Прибрати фото
+      </button>
+    </div>
+  ) : null}
+</div>
 
                 <div className="leave-review-field">
                   <textarea
-                    className="input leave-review-textarea"
+                    className="input"
                     placeholder="Напишіть кілька речень..."
                     value={reviewText}
                     onChange={(e) => setReviewText(e.target.value)}
@@ -1450,10 +1339,12 @@ export default function HomePage() {
                   onClick={submitReview}
                   disabled={reviewLoading}
                 >
-                  {reviewLoading ? "Надсилаю..." : "Надіслати відгук"}
+                  { "Надіслати відгук"}
                 </button>
 
-                {reviewMsg ? <p className="muted leave-review-message">{reviewMsg}</p> : null}
+                {reviewMsg ? (
+                  <p className="muted leave-review-message">{reviewMsg}</p>
+                ) : null}
               </div>
             </div>
           </div>
@@ -1462,9 +1353,14 @@ export default function HomePage() {
 
       <footer className="container">
         <div className="footer-row">
-          <div className="muted" style={{ display: "flex", alignItems: "center", gap: 12, flexWrap: "wrap" }}>
+          <div className="muted footer-meta">
             <span>© {new Date().getFullYear()}</span>
-            <a href="https://instagram.com/ashch.phh" target="_blank" rel="noopener noreferrer" className="ig">
+            <a
+              href="https://instagram.com/ashch.phh"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="ig"
+            >
               @ashch.phh
             </a>
           </div>

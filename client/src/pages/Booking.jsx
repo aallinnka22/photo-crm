@@ -28,14 +28,14 @@ export default function Booking() {
 
   useEffect(() => {
     loadSlots(form.date);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+  
   }, [form.date]);
 
   async function submit() {
     try {
       setStatus("Відправка...");
       const res = await createBooking(form);
-      setStatus(res.message || "Заявку надіслано ✅");
+      setStatus(res.message || "Дякую. Заявку надіслано.");
       setForm((p) => ({ ...p, time: "" }));
       if (form.date) await loadSlots(form.date);
     } catch (e) {
@@ -48,21 +48,39 @@ export default function Booking() {
       <h2>Онлайн-бронювання</h2>
 
       <input
-        style={{ width: "100%", padding: 12, borderRadius: 10, border: "1px solid #444", marginTop: 10 }}
+        style={{
+          width: "100%",
+          padding: 12,
+          borderRadius: 10,
+          border: "1px solid #444",
+          marginTop: 10,
+        }}
         placeholder="Ваше імʼя"
         value={form.clientName}
         onChange={(e) => setForm({ ...form, clientName: e.target.value })}
       />
 
       <input
-        style={{ width: "100%", padding: 12, borderRadius: 10, border: "1px solid #444", marginTop: 10 }}
+        style={{
+          width: "100%",
+          padding: 12,
+          borderRadius: 10,
+          border: "1px solid #444",
+          marginTop: 10,
+        }}
         placeholder="Телефон або email"
         value={form.contact}
         onChange={(e) => setForm({ ...form, contact: e.target.value })}
       />
 
       <select
-        style={{ width: "100%", padding: 12, borderRadius: 10, border: "1px solid #444", marginTop: 10 }}
+        style={{
+          width: "100%",
+          padding: 12,
+          borderRadius: 10,
+          border: "1px solid #444",
+          marginTop: 10,
+        }}
         value={form.packageName}
         onChange={(e) => setForm({ ...form, packageName: e.target.value })}
       >
@@ -73,13 +91,26 @@ export default function Booking() {
 
       <input
         type="date"
-        style={{ width: "100%", padding: 12, borderRadius: 10, border: "1px solid #444", marginTop: 10 }}
+        style={{
+          width: "100%",
+          padding: 12,
+          borderRadius: 10,
+          border: "1px solid #444",
+          marginTop: 10,
+        }}
         value={form.date}
         onChange={(e) => setForm({ ...form, date: e.target.value, time: "" })}
       />
 
       {form.date && (
-        <div style={{ marginTop: 12, padding: 12, border: "1px solid #444", borderRadius: 12 }}>
+        <div
+          style={{
+            marginTop: 12,
+            padding: 12,
+            border: "1px solid #444",
+            borderRadius: 12,
+          }}
+        >
           <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
             {slots.map((s) => (
               <button
@@ -91,7 +122,10 @@ export default function Booking() {
                   borderRadius: 10,
                   cursor: s.isFree ? "pointer" : "not-allowed",
                   opacity: s.isFree ? 1 : 0.4,
-                  border: form.time === s.time ? "2px solid #22c55e" : "1px solid #444",
+                  border:
+                    form.time === s.time
+                      ? "2px solid #22c55e"
+                      : "1px solid #444",
                   background: "transparent",
                 }}
                 type="button"
@@ -100,12 +134,21 @@ export default function Booking() {
               </button>
             ))}
           </div>
-          {!slots.length && <p style={{ marginTop: 8, opacity: 0.8 }}>Немає даних по слотах.</p>}
+          {!slots.length && (
+            <p style={{ marginTop: 8, opacity: 0.8 }}>Немає даних по слотах.</p>
+          )}
         </div>
       )}
 
       <button
-        style={{ marginTop: 12, width: "100%", padding: 12, borderRadius: 10, border: "none", cursor: "pointer" }}
+        style={{
+          marginTop: 12,
+          width: "100%",
+          padding: 12,
+          borderRadius: 10,
+          border: "none",
+          cursor: "pointer",
+        }}
         onClick={submit}
         disabled={!form.clientName || !form.contact || !form.date || !form.time}
       >

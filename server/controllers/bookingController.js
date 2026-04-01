@@ -11,17 +11,15 @@ function addMinutes(dateObj, minutes) {
   return new Date(dateObj.getTime() + minutes * 60 * 1000);
 }
 
-/**
- * CLIENT: create booking (pending)
- * POST /api/bookings
- * body: { clientName, contact, packageName, date, time, duration? }
- */
+
 exports.createBooking = async (req, res) => {
   try {
     const { clientName, contact, packageName, date, time, duration } = req.body;
 
     if (!clientName || !contact || !packageName || !date || !time) {
-      return res.status(400).json({ message: "Заповніть імʼя, контакт, пакет, дату і час" });
+      return res
+        .status(400)
+        .json({ message: "Заповніть імʼя, контакт, пакет, дату і час" });
     }
 
     const startAt = makeDate(date, time);
@@ -29,11 +27,11 @@ exports.createBooking = async (req, res) => {
       return res.status(400).json({ message: "Некоректна дата/час" });
     }
 
-    // default duration = 60 minutes
+
     const dur = Number.isFinite(Number(duration)) ? Number(duration) : 60;
     const endAt = addMinutes(startAt, dur);
 
-    // conflict check (includes blocks too because blocks are also Bookings with active status)
+    
     const conflict = await Booking.findOne({
       status: { $in: ["pending", "confirmed"] },
       startAt: { $lt: endAt },
@@ -55,33 +53,26 @@ exports.createBooking = async (req, res) => {
       blockReason: "",
     });
 
-    // ✅ ЗМІНА ТІЛЬКИ ТУТ:
-    // 1) ВІДПОВІДАЄМО КЛІЄНТУ ОДРАЗУ
+  
     res.json({
       ok: true,
       booking,
-      message: "✅ Заявку відправлено! Я звʼяжусь з вами для підтвердження.",
+      message: "Заявку відправлено! Я звʼяжусь з вами для підтвердження.",
     });
 
-    // 2) EMAIL ЙДЕ У ФОНІ (НЕ БЛОКУЄ API)
+
     notifyAdminBooking(booking).catch((mailErr) => {
       console.error("notifyAdminBooking failed:", mailErr?.message || mailErr);
     });
 
-    return; // щоб точно не було випадкових дубль-відповідей
+    return; 
   } catch (err) {
     console.error("createBooking error:", err);
     return res.status(500).json({ message: "Помилка створення бронювання" });
   }
 };
 
-/**
- * CLIENT: availability for a date
- * GET /api/bookings/availability?date=YYYY-MM-DD
- * returns { slots: [{time, isFree}] }
- *
- * Slots: 09:00 - 19:00 (each 60 min)
- */
+
 exports.getAvailability = async (req, res) => {
   try {
     const { date } = req.query;
@@ -102,7 +93,9 @@ exports.getAvailability = async (req, res) => {
       const slotStart = makeDate(date, `${String(h).padStart(2, "0")}:00`);
       const slotEnd = addMinutes(slotStart, 60);
 
-      const busy = busyItems.some((b) => slotStart < b.endAt && slotEnd > b.startAt);
+      const busy = busyItems.some(
+        (b) => slotStart < b.endAt && slotEnd > b.startAt,
+      );
 
       slots.push({
         time: `${String(h).padStart(2, "0")}:00`,
@@ -113,14 +106,11 @@ exports.getAvailability = async (req, res) => {
     return res.json({ slots });
   } catch (err) {
     console.error("getAvailability error:", err);
-    return res.status(500).json({ message: "Помилка отримання слотів" });
+    return res.status(500).json({ message: "Помилка отримання часу" });
   }
 };
 
-/**
- * ADMIN: list bookings (optionally filter by date)
- * GET /api/bookings?date=YYYY-MM-DD
- */
+
 exports.getBookings = async (req, res) => {
   try {
     const { date } = req.query;
@@ -141,10 +131,7 @@ exports.getBookings = async (req, res) => {
   }
 };
 
-/**
- * ADMIN: create block (day off / busy time)
- * POST /api/bookings/block
- */
+
 exports.adminCreateBlock = async (req, res) => {
   try {
     const { date, time, startTime, endTime, duration, reason } = req.body;
@@ -166,7 +153,11 @@ exports.adminCreateBlock = async (req, res) => {
       endAt = addMinutes(startAt, dur);
     }
 
-    if (Number.isNaN(startAt.getTime()) || Number.isNaN(endAt.getTime()) || endAt <= startAt) {
+    if (
+      Number.isNaN(startAt.getTime()) ||
+      Number.isNaN(endAt.getTime()) ||
+      endAt <= startAt
+    ) {
       return res.status(400).json({ message: "Некоректний час блокування" });
     }
 
@@ -177,7 +168,9 @@ exports.adminCreateBlock = async (req, res) => {
     });
 
     if (conflict) {
-      return res.status(409).json({ message: "В цей час уже є бронювання/блок" });
+      return res
+        .status(409)
+        .json({ message: "В цей час уже є бронювання/блок" });
     }
 
     const booking = await Booking.create({
@@ -199,10 +192,7 @@ exports.adminCreateBlock = async (req, res) => {
   }
 };
 
-/**
- * ADMIN: update booking fields (status/time/note)
- * PUT /api/bookings/:id
- */
+
 exports.adminUpdateBooking = async (req, res) => {
   try {
     const { id } = req.params;
@@ -214,7 +204,11 @@ exports.adminUpdateBooking = async (req, res) => {
     const newStart = startAt ? new Date(startAt) : booking.startAt;
     const newEnd = endAt ? new Date(endAt) : booking.endAt;
 
-    if (Number.isNaN(newStart.getTime()) || Number.isNaN(newEnd.getTime()) || newEnd <= newStart) {
+    if (
+      Number.isNaN(newStart.getTime()) ||
+      Number.isNaN(newEnd.getTime()) ||
+      newEnd <= newStart
+    ) {
       return res.status(400).json({ message: "Некоректний час" });
     }
 
@@ -226,7 +220,9 @@ exports.adminUpdateBooking = async (req, res) => {
     });
 
     if (conflict) {
-      return res.status(409).json({ message: "Конфлікт по часу з іншим записом" });
+      return res
+        .status(409)
+        .json({ message: "Конфлікт по часу з іншим записом" });
     }
 
     booking.startAt = newStart;
@@ -251,10 +247,7 @@ exports.adminUpdateBooking = async (req, res) => {
   }
 };
 
-/**
- * ADMIN: delete booking or block
- * DELETE /api/bookings/:id
- */
+
 exports.adminDeleteBooking = async (req, res) => {
   try {
     const { id } = req.params;

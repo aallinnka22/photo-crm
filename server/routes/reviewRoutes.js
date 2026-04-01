@@ -3,18 +3,18 @@ const multer = require("multer");
 const { v2: cloudinary } = require("cloudinary");
 const Review = require("../models/Review");
 
-// Cloudinary config
+
 cloudinary.config({
   cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
   api_key: process.env.CLOUDINARY_API_KEY,
   api_secret: process.env.CLOUDINARY_API_SECRET,
 });
 
-// multer in memory
+
 const upload = multer({
   storage: multer.memoryStorage(),
   limits: {
-    fileSize: 5 * 1024 * 1024, // 5 MB
+    fileSize: 5 * 1024 * 1024, 
   },
   fileFilter: (req, file, cb) => {
     const allowed = ["image/jpeg", "image/png", "image/webp"];
@@ -33,14 +33,14 @@ function uploadBufferToCloudinary(buffer, folder = "reviews") {
       (error, result) => {
         if (error) return reject(error);
         resolve(result);
-      }
+      },
     );
 
     stream.end(buffer);
   });
 }
 
-// Public: get approved reviews for homepage
+
 router.get("/", async (req, res) => {
   try {
     const limit = Math.min(parseInt(req.query.limit || "20", 10), 50);
@@ -55,16 +55,18 @@ router.get("/", async (req, res) => {
   }
 });
 
-// Public: create review (pending)
+
 router.post("/", upload.single("photo"), async (req, res) => {
   try {
-    const { name, contact, rating, text, website, features, shootType } = req.body || {};
+    const { name, contact, rating, text, website, features, shootType } =
+      req.body || {};
 
-    // Honeypot проти ботів: поле website має бути пустим
     if (website) return res.status(400).json({ message: "Помилка" });
 
     if (!name?.trim() || !text?.trim()) {
-      return res.status(400).json({ message: "Заповніть імʼя та текст відгуку." });
+      return res
+        .status(400)
+        .json({ message: "Заповніть імʼя та текст відгуку." });
     }
 
     const cleanRating = Math.max(1, Math.min(5, Number(rating || 5)));
@@ -90,7 +92,10 @@ router.post("/", upload.single("photo"), async (req, res) => {
     let photoUrl = "";
 
     if (req.file?.buffer) {
-      const uploaded = await uploadBufferToCloudinary(req.file.buffer, "reviews");
+      const uploaded = await uploadBufferToCloudinary(
+        req.file.buffer,
+        "reviews",
+      );
       photoUrl = uploaded.secure_url || "";
     }
 
@@ -105,7 +110,10 @@ router.post("/", upload.single("photo"), async (req, res) => {
       status: "pending",
     });
 
-    res.json({ ok: true, message: "✅ Дякую! Відгук відправлено на модерацію." });
+    res.json({
+      ok: true,
+      message: "✅ Дякую!",
+    });
   } catch (e) {
     if (e instanceof multer.MulterError && e.code === "LIMIT_FILE_SIZE") {
       return res.status(400).json({ message: "Фото має бути до 5 МБ." });

@@ -31,7 +31,9 @@
           document.documentElement.classList.toggle("dark", !isLight);
 
           // щоб нативні елементи (інпути/скролбар) теж були ок
-          document.documentElement.style.colorScheme = isLight ? "light" : "dark";
+          document.documentElement.style.colorScheme = isLight
+            ? "light"
+            : "dark";
 
           // на випадок, якщо стилі в тебе прив’язані до body
           document.addEventListener("DOMContentLoaded", function () {
