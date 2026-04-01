@@ -21,16 +21,16 @@ body {
   height: 100%;
 }
 body {
-  margin: 0;
   font-family:
-    "Inter",
     "Manrope",
+    "Inter",
     system-ui,
     -apple-system,
     "Segoe UI",
     Roboto,
     Arial,
     sans-serif;
+
   color: var(--fg);
   background:
     radial-gradient(
@@ -2891,4 +2891,65 @@ img {
 
 .retouch-text-card {
   margin-bottom: 30px;
+}
+
+
+input,
+textarea,
+select,
+button {
+  font: inherit;
+}
+
+input::placeholder,
+textarea::placeholder,
+select {
+  font-family: inherit;
+}
+
+.leave-review-card {
+  font-size: 16px;
+  line-height: 1.45;
+}
+
+.leave-review-card .label,
+.leave-review-card .muted,
+.leave-review-card .input,
+.leave-review-card textarea,
+.leave-review-card select {
+  font-family: inherit;
+  line-height: 1.45;
+}
+
+.leave-review-card .input,
+.leave-review-card textarea,
+.leave-review-card select {
+  font-size: 16px;
+  font-weight: 400;
+}
+
+.leave-review-card .label {
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.leave-review-card .muted {
+  font-size: 14px;
+}
+
+.leave-review-card .btn {
+  font-family: inherit;
+}
+
+.leave-review-field textarea.input {
+  font-family: inherit;
+  font-size: 16px;
+  font-weight: 400;
+}
+
+.review-file-hint,
+.review-file-name {
+  font-family: inherit;
+  font-size: 14px;
+  line-height: 1.4;
 }
