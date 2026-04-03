@@ -320,6 +320,7 @@ section {
 }
 .muted {
   color: var(--muted);
+  
 }
 .chip {
   display: inline-block;
