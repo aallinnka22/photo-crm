@@ -2899,6 +2899,7 @@ textarea,
 select,
 button {
   font: inherit;
+  font-size: 14px;
 }
 
 input::placeholder,
@@ -2908,8 +2909,8 @@ select {
 }
 
 .leave-review-card {
-  font-size: 16px;
-  line-height: 1.45;
+  font-size: 14px;
+  line-height: 1.2;
 }
 
 .leave-review-card .label,
@@ -2918,19 +2919,19 @@ select {
 .leave-review-card textarea,
 .leave-review-card select {
   font-family: inherit;
-  line-height: 1.45;
+  line-height: 1.2;
 }
 
 .leave-review-card .input,
 .leave-review-card textarea,
 .leave-review-card select {
-  font-size: 16px;
-  font-weight: 400;
+  font-size: 14px;
+  font-weight: 300;
 }
 
 .leave-review-card .label {
   font-size: 14px;
-  font-weight: 600;
+  font-weight: 300;
 }
 
 .leave-review-card .muted {
@@ -2943,13 +2944,74 @@ select {
 
 .leave-review-field textarea.input {
   font-family: inherit;
-  font-size: 16px;
-  font-weight: 400;
+  font-size: 14px;
+  font-weight: 300;
 }
 
 .review-file-hint,
 .review-file-name {
   font-family: inherit;
   font-size: 14px;
-  line-height: 1.4;
+  line-height: 1.2;
+}
+
+
+
+/* Послуги: кнопки на одному рівні */
+.grid.cols-3 .card {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+.grid.cols-3 .card .btn {
+  margin-top: auto;
+  align-self: flex-start;
+}
+
+.retouch-text-card {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  gap: 18px;
+}
+
+.retouch-compare-card {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  gap: 16px;
+}
+
+.retouch-compare-card .ba-wrap {
+  width: 100%;
+  margin-top: auto;
+}
+
+.retouch-text-card .btn {
+  align-self: flex-start;
+  margin-top: auto;
+}
+
+.retouch-cert-mini-img {
+  display: block;
+  width: 100%;
+  max-width: 100%;
+  height: auto;
+  object-fit: contain;
+  border-radius: 16px;
+  transform: none !important;
+  transition: none !important;
+}
+
+.retouch-cert-mini:hover .retouch-cert-mini-img,
+.retouch-cert-mini-img:hover {
+  transform: none !important;
+
+}
+.retouch-cert-mini {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  min-width: 0;
 }

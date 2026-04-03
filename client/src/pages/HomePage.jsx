@@ -260,16 +260,21 @@ export default function HomePage() {
 
   const photos = [
     { cat: "portrait", src: "/images/IMG_3480.jpg", alt: "portrait" },
-    { cat: "family", src: "/images/IMG_2335.jpg", alt: "family" },
+    { cat: "family", src: "/images/IMG_2352.jpg", alt: "family" },
     { cat: "event", src: "/images/IMG_3611.jpg", alt: "event" },
 
-    { cat: "portrait", src: "/images/IMG_3563.jpg", alt: "portrait" },
+    { cat: "portrait", src: "/images/IMG_5296.jpg", alt: "portrait" },
     { cat: "family", src: "/images/IMG_6737.jpg", alt: "family" },
     { cat: "event", src: "/images/IMG_0822.jpg", alt: "event" },
 
-    { cat: "portrait", src: "/images/IMG_2743.jpg", alt: "portrait" },
+    { cat: "portrait", src: "/images/IMG_7875.jpg", alt: "portrait" },
     { cat: "family", src: "/images/IMG_7066.jpg", alt: "family" },
     { cat: "event", src: "/images/IMG_2714.jpg", alt: "event" },
+
+     { cat: "portrait", src: "/images/IMG_6609 1 copy.jpg", alt: "portrait" },
+    { cat: "family", src: "/images/IMG_5125.jpg", alt: "family" },
+    { cat: "event", src: "/images/IMG_0505.jpg", alt: "event" },
+
   ];
 
   const filteredPhotos =
@@ -1038,141 +1043,158 @@ export default function HomePage() {
           </div>
         </section>
 
-        <section id="retouch">
-          <h3 className="section-title">Ретуш: до / після</h3>
+    <section id="retouch">
+  <h3 className="section-title">Ретуш: до / після</h3>
 
-          <div className="grid cols-1">
-           <div className="card retouch-text-card">
-              <h4 className="retouch-title">Акуратна ретуш без “пластики”</h4>
-              <p className="muted">
-                Чистка шкіри, легке вирівнювання тону, робота з кольором та
-                світлом так, щоб фото виглядали природно. Якщо хочеш “глянець”
-                або навпаки максимально натурально – це узгоджується.
-              </p>
+  <div className="grid cols-2">
+    <div className="card retouch-text-card">
+      <div className="retouch-cert-mini">
+        <img
+          src="/images/certificate.jpg"
+          alt="Сертифікат про проходження професійного навчання з ретуші"
+          className="retouch-cert-mini-img"
+        />
+        <div className="retouch-cert-mini-text">
+       <div className="retouch-cert-mini-title">Сертифікат з ретуші</div>
+<div className="muted retouch-cert-mini-caption">
+  Професійне навчання з ретуші та кольорокорекції.
+</div>
+        </div>
+      </div>
 
-              <ul className="muted retouch-list">
-                <li>Збереження текстури шкіри</li>
-                <li>Корекція кольору та контрасту</li>
-                <li>Локальні правки (очі/волосся/деталі)</li>
-              </ul>
+      <a
+        className="btn"
+        href="https://instagram.com/ashch.phh"
+        target="_blank"
+        rel="noopener noreferrer"
+        title="Instagram"
+      >
+        Звʼязатись зі мною
+      </a>
+    </div>
 
-              <a
-                className="btn"
-                href="https://instagram.com/ashch.phh"
-                target="_blank"
-                rel="noopener noreferrer"
-                title="Instagram"
-              >
-                Звʼязатись зі мною
-              </a>
-            </div>
+    <div className="card">
+      <h4 className="retouch-title">Акуратна ретуш без “пластики”</h4>
+      <p className="muted">
+        Чистка шкіри, легке вирівнювання тону, робота з кольором та
+        світлом так, щоб фото виглядали природно. Якщо хочеш “глянець”
+        або навпаки максимально натурально – це узгоджується.
+      </p>
 
-            <div className="card">
-              <div
-                ref={retouchWrapRef}
-                className={`ba-wrap ${retouchInView ? "ba-inview" : ""} ${retouchDragging ? "ba-dragging" : ""}`}
-                onPointerDown={onRetouchPointerDown}
-                onPointerMove={onRetouchPointerMove}
-                onPointerUp={onRetouchPointerUp}
-                onPointerCancel={onRetouchPointerUp}
-                role="img"
-                aria-label="Порівняння ретуші: до і після"
-                style={{
-                  borderRadius: 18,
-                  overflow: "hidden",
-                  position: "relative",
-                  aspectRatio: "16 / 21",
-                  userSelect: "none",
-                  touchAction: "none",
-                  border: "1px solid rgba(255,255,255,0.12)",
-                  background: "rgba(0,0,0,0.25)",
-                }}
-              >
-                <img
-                  src="/images/після 5.jpg"
-                  alt="До ретуші"
-                  draggable={false}
-                  style={{
-                    position: "absolute",
-                    inset: 0,
-                    width: "100%",
-                    height: "100%",
-                    objectFit: "cover",
-                    filter: "contrast(1.02)",
-                  }}
-                />
+      <ul className="muted retouch-list">
+        <li>Збереження текстури шкіри</li>
+        <li>Корекція кольору та контрасту</li>
+        <li>Локальні правки (очі/волосся/деталі)</li>
+      </ul>
 
-                <div
-                  className="ba-after"
-                  style={{
-                    position: "absolute",
-                    inset: 0,
-                    width: `${retouchPos}%`,
-                    overflow: "hidden",
-                  }}
-                >
-                  <img
-                    src="/images/до1 copy.jpg"
-                    alt="Після ретуші"
-                    draggable={false}
-                    style={{
-                      position: "absolute",
-                      inset: 0,
-                      width: "100%",
-                      height: "100%",
-                      objectFit: "cover",
-                    }}
-                  />
-                </div>
+      <div
+        ref={retouchWrapRef}
+        className={`ba-wrap ${retouchInView ? "ba-inview" : ""} ${retouchDragging ? "ba-dragging" : ""}`}
+        onPointerDown={onRetouchPointerDown}
+        onPointerMove={onRetouchPointerMove}
+        onPointerUp={onRetouchPointerUp}
+        onPointerCancel={onRetouchPointerUp}
+        role="img"
+        aria-label="Порівняння ретуші: до і після"
+        style={{
+          borderRadius: 18,
+          overflow: "hidden",
+          position: "relative",
+          aspectRatio: "16 / 21",
+          userSelect: "none",
+          touchAction: "none",
+          border: "1px solid rgba(255,255,255,0.12)",
+          background: "rgba(0,0,0,0.25)",
+          width: "100%",
+          maxWidth: "1000px",
+          margin: "0 auto",
+        }}
+      >
+        <img
+          src="/images/після 5.jpg"
+          alt="До ретуші"
+          draggable={false}
+          style={{
+            position: "absolute",
+            inset: 0,
+            width: "100%",
+            height: "100%",
+            objectFit: "cover",
+            filter: "contrast(1.02)",
+          }}
+        />
 
-                <div
-                  className="ba-divider"
-                  style={{
-                    position: "absolute",
-                    top: 0,
-                    bottom: 0,
-                    left: `${retouchPos}%`,
-                    width: 2,
-                    transform: "translateX(-1px)",
-                    background: "rgba(255,255,255,0.65)",
-                    boxShadow: "0 0 18px rgba(255,255,255,0.20)",
-                    pointerEvents: "none",
-                  }}
-                />
+        <div
+          className="ba-after"
+          style={{
+            position: "absolute",
+            inset: 0,
+            width: `${retouchPos}%`,
+            overflow: "hidden",
+          }}
+        >
+          <img
+            src="/images/до1 copy.jpg"
+            alt="Після ретуші"
+            draggable={false}
+            style={{
+              position: "absolute",
+              inset: 0,
+              width: "100%",
+              height: "100%",
+              objectFit: "cover",
+            }}
+          />
+        </div>
 
-                <div
-                  className="ba-handle"
-                  style={{
-                    position: "absolute",
-                    left: `${retouchPos}%`,
-                    top: "50%",
-                    transform: "translate(-50%, -50%)",
-                    width: 44,
-                    height: 44,
-                    borderRadius: 999,
-                    background: "rgba(0,0,0,0.55)",
-                    border: "1px solid rgba(255,255,255,0.45)",
-                    display: "grid",
-                    placeItems: "center",
-                    backdropFilter: "blur(8px)",
-                    pointerEvents: "none",
-                  }}
-                >
-                  <div className="ba-handle-inner">
-                    <span className="ba-handle-arrow">◀</span>
-                    <span className="ba-handle-gap"></span>
-                    <span className="ba-handle-arrow">▶</span>
-                  </div>
-                </div>
+        <div
+          className="ba-divider"
+          style={{
+            position: "absolute",
+            top: 0,
+            bottom: 0,
+            left: `${retouchPos}%`,
+            width: 2,
+            transform: "translateX(-1px)",
+            background: "rgba(255,255,255,0.65)",
+            boxShadow: "0 0 18px rgba(255,255,255,0.20)",
+            pointerEvents: "none",
+          }}
+        />
 
-                <div className="ba-label ba-label-left">До</div>
-                <div className="ba-label ba-label-right">Після</div>
-              </div>
-
-              <div className="muted retouch-note"></div>
-            </div>
+        <div
+          className="ba-handle"
+          style={{
+            position: "absolute",
+            left: `${retouchPos}%`,
+            top: "50%",
+            transform: "translate(-50%, -50%)",
+            width: 44,
+            height: 44,
+            borderRadius: 999,
+            background: "rgba(0,0,0,0.55)",
+            border: "1px solid rgba(255,255,255,0.45)",
+            display: "grid",
+            placeItems: "center",
+            backdropFilter: "blur(8px)",
+            pointerEvents: "none",
+          }}
+        >
+          <div className="ba-handle-inner">
+            <span className="ba-handle-arrow">◀</span>
+            <span className="ba-handle-gap"></span>
+            <span className="ba-handle-arrow">▶</span>
           </div>
-        </section>
+        </div>
+
+        <div className="ba-label ba-label-left">До</div>
+        <div className="ba-label ba-label-right">Після</div>
+      </div>
+
+      <div className="muted retouch-note"></div>
+    </div>
+  </div>
+</section>
 
         <section id="leave-review" className="leave-review-wrap">
           <h3 className="section-title leave-review-title">Залишити відгук</h3>
