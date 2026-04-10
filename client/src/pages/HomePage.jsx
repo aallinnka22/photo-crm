@@ -28,46 +28,7 @@ export default function HomePage() {
   const [retouchDragging, setRetouchDragging] = useState(false);
   const [retouchInView, setRetouchInView] = useState(false);
 
-  const reviews = useMemo(
-    () => [
-      {
-        name: "Марія",
-        tag: "Відгук",
-        text: "Дуже комфортно на зйомці. Аліна підказувала позування, все було швидко й без зайвої метушні. Фото — 🔥, виглядають природно!",
-        rating: 5,
-        pills: ["Комфорт", "Підказки", "Природна ретуш"],
-      },
-      {
-        name: "Анастасія",
-        tag: "Відгук",
-        text: "Діти взагалі не хотіли фоткатися, але якось непомітно все вийшло 🙂 Кадри живі, емоційні, і ретуш дуже акуратна.",
-        rating: 5,
-        pills: ["Комфорт", "Підказки", "Природна ретуш"],
-      },
-      {
-        name: "Катерина",
-        tag: "Відгук",
-        text: "Я хвилювалась, але було легко. Плюс — онлайн-запис реально зручний: вибрала слот, подала заявку — і все.",
-        rating: 5,
-        pills: ["Комфорт", "Підказки", "Природна ретуш"],
-      },
-      {
-        name: "Юлія",
-        tag: "Відгук",
-        text: "Зловила моменти, які ми навіть не помічали. Світло, кольори — супер. Фото отримали швидше, ніж очікували.",
-        rating: 5,
-        pills: ["Комфорт", "Підказки", "Природна ретуш"],
-      },
-      {
-        name: "Ірина",
-        tag: "Відгук",
-        text: "Дуже тактовно направляє, не “ламає” в кадрі. Знімки — прям як з Pinterest, але без штучності. Рекомендую!",
-        rating: 5,
-        pills: ["Комфорт", "Підказки", "Природна ретуш"],
-      },
-    ],
-    [],
-  );
+  
 
   const [dbReviews, setDbReviews] = useState([]);
   const [dbReviewsLoading, setDbReviewsLoading] = useState(false);
@@ -208,7 +169,7 @@ export default function HomePage() {
     };
   }, [API_BASE]);
 
-  const allReviews = dbReviews?.length ? dbReviews : reviews;
+  const allReviews = Array.isArray(dbReviews) ? dbReviews : [];
 
   useEffect(() => {
     const len = allReviews?.length || 0;
@@ -1111,7 +1072,7 @@ export default function HomePage() {
         }}
       >
         <img
-          src="/images/після 5.jpg"
+          src="/images/2 copy.jpg"
           alt="До ретуші"
           draggable={false}
           style={{
