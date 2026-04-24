@@ -90,7 +90,7 @@ body {
 }
 
 .container {
-  width: min(1120px, 92vw);
+  width: min(1350px, 92vw);
   margin: 0 auto;
   position: relative;
   z-index: 1;
@@ -2728,8 +2728,9 @@ img {
 
 .chat-widget-toggle {
   border-radius: 999px;
-  padding: 12px 14px;
+  padding: 20px 27px;
   box-shadow: 0 12px 30px rgba(0, 0, 0, 0.35);
+   
 }
 
 .chat-widget-card {

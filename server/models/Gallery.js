@@ -3,16 +3,14 @@ const mongoose = require("mongoose");
 const PhotoSchema = new mongoose.Schema(
   {
     // Cloudinary
-    url: { type: String, required: true }, // secure_url
-    publicId: { type: String, required: true }, // cloudinary public_id
+    url: { type: String, required: true }, 
+    publicId: { type: String, required: true }, 
     filename: { type: String, default: "" },
     width: { type: Number, default: 0 },
     height: { type: Number, default: 0 },
     bytes: { type: Number, default: 0 },
 
-    // Access control for client
-    // preview: visible to client but NOT downloadable
-    // final: downloadable by client
+   
     status: { type: String, enum: ["preview", "final"], default: "preview" },
   },
   { timestamps: true },

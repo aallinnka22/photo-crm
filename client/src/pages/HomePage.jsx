@@ -65,7 +65,7 @@ export default function HomePage() {
     () => [
       "Комфорт",
       "Підказки",
-      "Природна ретуш",
+      "Професіоналізм",
       "Швидко",
       "Атмосфера",
       "Результат",
@@ -75,7 +75,7 @@ export default function HomePage() {
   const [reviewFeatures, setReviewFeatures] = useState([
     "Комфорт",
     "Підказки",
-    "Природна ретуш",
+    "Професіоналізм",
   ]);
 
   function toggleFeature(label) {
@@ -152,7 +152,7 @@ export default function HomePage() {
             ? it.features
             : Array.isArray(it?.tags)
               ? it.tags
-              : ["Комфорт", "Підказки", "Природна ретуш"],
+              : ["Комфорт", "Підказки", "Професіоналізм"],
         }));
 
         if (alive) setDbReviews(mapped);

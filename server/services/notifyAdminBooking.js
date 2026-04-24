@@ -39,12 +39,6 @@ async function notifyAdminBooking(booking) {
     <p><b>Контакт:</b> ${booking.contact}</p>
     <p><b>Пакет:</b> ${booking.packageName}</p>
     <p><b>Дата/час:</b> ${dt}</p>
-    <hr/>
-    <p>
-      <a href="${baseUrl}/admin" style="display:inline-block;padding:10px 14px;background:#111;color:#fff;border-radius:10px;text-decoration:none">
-        Відкрити адмінку
-      </a>
-    </p>
   </div>
   `;
 

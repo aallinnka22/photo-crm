@@ -594,9 +594,9 @@ export default function AdminPage() {
                     ) : null}
 
                     <div className="muted admin-slot-legend">
-                      <span>🟪 Вільно</span>
-                      <span>🟥Заблоковано адміном</span>
-                      <span>⬜ Зайнято клієнтом</span>
+                      <span>🔵 Вільно</span>
+                      <span>🔴 Заблоковано адміном</span>
+                      <span>⚫️ Зайнято клієнтом</span>
                     </div>
                   </div>
                 </div>
@@ -633,60 +633,120 @@ export default function AdminPage() {
                 ) : null}
 
                 <div className="stack admin-scroll-360">
-                  {(revItems || []).map((r) => (
-                    <div key={r._id} className="card admin-review-card">
-                      <div className="admin-review-head">
-                        <div className="admin-review-meta">
-                          <div className="admin-review-name">
-                            {r.name}{" "}
-                            <span className="muted admin-review-rating">
-                              ({r.rating}/5)
-                            </span>
-                          </div>
-                          {r.contact ? (
-                            <div className="muted admin-review-subtext">
-                              {r.contact}
-                            </div>
-                          ) : null}
-                          {r.createdAt ? (
-                            <div className="muted admin-review-subtext">
-                              {new Date(r.createdAt).toLocaleString()}
-                            </div>
-                          ) : null}
-                        </div>
+                 {(revItems || []).map((r) => (
+  <div key={r._id} className="card admin-review-card">
+    <div
+      style={{
+        display: "grid",
+        gridTemplateColumns: r.photoUrl ? "72px 1fr" : "1fr",
+        gap: "14px",
+        alignItems: "start",
+      }}
+    >
+      {r.photoUrl ? (
+        <img
+          src={r.photoUrl}
+          alt={r.name || "review"}
+          loading="lazy"
+          style={{
+            width: "72px",
+            height: "72px",
+            objectFit: "cover",
+            borderRadius: "50%",
+            border: "1px solid rgba(255,255,255,0.12)",
+          }}
+        />
+      ) : null}
 
-                        <button
-                          type="button"
-                          className="icon-btn"
-                          onClick={() => removeReview(r._id)}
-                          title="Видалити"
-                        >
-                          🗑️
-                        </button>
-                      </div>
+      <div>
+        <div className="admin-review-head">
+          <div className="admin-review-meta">
+            <div className="admin-review-name">
+              {r.name}{" "}
+              <span className="muted admin-review-rating">
+                ({r.rating}/5)
+              </span>
+            </div>
 
-                      <div className="muted admin-review-text">{r.text}</div>
+            {r.shootType ? (
+              <div className="muted admin-review-subtext">
+                Тип зйомки: {r.shootType}
+              </div>
+            ) : null}
 
-                      <div className="admin-review-actions">
-                        <button
-                          className="btn"
-                          type="button"
-                          disabled={revBusy}
-                          onClick={() => setReviewStatus(r._id, "approved")}
-                        >
-                          Підтвердити
-                        </button>
-                        <button
-                          className="btn"
-                          type="button"
-                          disabled={revBusy}
-                          onClick={() => setReviewStatus(r._id, "rejected")}
-                        >
-                          Відхилити
-                        </button>
-                      </div>
-                    </div>
-                  ))}
+            {r.contact ? (
+              <div className="muted admin-review-subtext">{r.contact}</div>
+            ) : null}
+
+            {r.createdAt ? (
+              <div className="muted admin-review-subtext">
+                {new Date(r.createdAt).toLocaleString()}
+              </div>
+            ) : null}
+          </div>
+
+          <button
+            type="button"
+            className="icon-btn"
+            onClick={() => removeReview(r._id)}
+            title="Видалити"
+          >
+            🗑️
+          </button>
+        </div>
+
+        <div className="muted admin-review-text">{r.text}</div>
+
+        {Array.isArray(r.features) && r.features.length ? (
+          <div
+            style={{
+              display: "flex",
+              flexWrap: "wrap",
+              gap: "8px",
+              marginTop: "12px",
+            }}
+          >
+            {r.features.map((f, i) => (
+              <span
+                key={`${r._id}-${f}-${i}`}
+                style={{
+                  padding: "6px 12px",
+                  borderRadius: "999px",
+                  border: "1px solid rgba(255,255,255,0.12)",
+                  background: "rgba(255,255,255,0.04)",
+                  fontSize: "14px",
+                }}
+              >
+                ✓ {f}
+              </span>
+            ))}
+          </div>
+        ) : null}
+
+        {r.status === "pending" ? (
+  <div className="admin-review-actions">
+    <button
+      className="btn"
+      type="button"
+      disabled={revBusy}
+      onClick={() => setReviewStatus(r._id, "approved")}
+    >
+      Підтвердити
+    </button>
+    <button
+      className="btn"
+      type="button"
+      disabled={revBusy}
+      onClick={() => setReviewStatus(r._id, "rejected")}
+    >
+      Відхилити
+    </button>
+  </div>
+) : null}
+      </div>
+    </div>
+  </div>
+))}
                   {!revBusy && !revItems.length ? (
                     <div className="muted">Поки що порожньо.</div>
                   ) : null}

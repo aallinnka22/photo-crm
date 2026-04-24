@@ -7,29 +7,23 @@ import AdminPage from "./pages/AdminPage.jsx";
 
 export default function App() {
   useEffect(() => {
-    const applyTheme = () => {
-      const t = localStorage.getItem("theme") || "dark";
-      document.documentElement.classList.toggle("light", t === "light");
-    };
+  const applyTheme = () => {
+    const t = localStorage.getItem("theme") || "dark";
+    document.documentElement.classList.toggle("light", t === "light");
+  };
 
-   
-    applyTheme();
+  applyTheme();
 
-   
-    window.addEventListener("storage", applyTheme);
+  const onStorage = (e) => {
+    if (!e.key || e.key === "theme") applyTheme();
+  };
 
-  
-    const origSetItem = localStorage.setItem;
-    localStorage.setItem = function (key, value) {
-      origSetItem.apply(this, [key, value]);
-      if (key === "theme") applyTheme();
-    };
+  window.addEventListener("storage", onStorage);
 
-    return () => {
-      window.removeEventListener("storage", applyTheme);
-      localStorage.setItem = origSetItem;
-    };
-  }, []);
+  return () => {
+    window.removeEventListener("storage", onStorage);
+  };
+}, []);
 
   return (
     <Routes>
