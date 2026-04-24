@@ -12,37 +12,23 @@
       rel="stylesheet"
     />
 
-    <!-- ✅ ТЕМА СТАВИТЬСЯ ДО React (і light, і dark) -->
     <script>
-      (function () {
-        try {
-          var saved = localStorage.getItem("theme"); // "light" або "dark" або null
+  (function () {
+    try {
+      var saved = localStorage.getItem("theme");
+      var systemPrefersDark =
+        window.matchMedia &&
+        window.matchMedia("(prefers-color-scheme: dark)").matches;
 
-          // fallback: системна тема (особливо важливо для мобільного/WhatsApp браузера)
-          var systemPrefersDark =
-            window.matchMedia &&
-            window.matchMedia("(prefers-color-scheme: dark)").matches;
+      var theme = saved || (systemPrefersDark ? "dark" : "light");
+      var isLight = theme === "light";
 
-          var theme = saved || (systemPrefersDark ? "dark" : "light");
-
-          // ставимо класи явно
-          var isLight = theme === "light";
-          document.documentElement.classList.toggle("light", isLight);
-          document.documentElement.classList.toggle("dark", !isLight);
-
-          // щоб нативні елементи (інпути/скролбар) теж були ок
-          document.documentElement.style.colorScheme = isLight
-            ? "light"
-            : "dark";
-
-          // на випадок, якщо стилі в тебе прив’язані до body
-          document.addEventListener("DOMContentLoaded", function () {
-            document.body.classList.toggle("light", isLight);
-            document.body.classList.toggle("dark", !isLight);
-          });
-        } catch (e) {}
-      })();
-    </script>
+      document.documentElement.classList.toggle("light", isLight);
+      document.documentElement.classList.toggle("dark", !isLight);
+      document.documentElement.style.colorScheme = isLight ? "light" : "dark";
+    } catch (e) {}
+  })();
+</script>
   </head>
 
   <body>
