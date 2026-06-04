@@ -323,7 +323,6 @@ export default function AdminPage() {
     }
 
     try {
-      setSlotMsg("Блокую...");
       await adminCreateBlock(token, {
         date: slotDate,
         time: timeStr,
