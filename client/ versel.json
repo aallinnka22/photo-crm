@@ -1,0 +1,8 @@
+{
+  "rewrites": [
+    {
+      "source": "/api/(.*)",
+      "destination": "https://photo-crm.onrender.com/api/$1"
+    }
+  ]
+}
