@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { createBooking, getAvailability } from "../api";
-
+import DatePicker from "react-datepicker";
 
 export default function Booking() {
   const [form, setForm] = useState({
@@ -90,25 +90,44 @@ export default function Booking() {
         <option value="Love story">Love story</option>
       </select>
 
-     <input
-  type="date"
-  style={{
-    width: "100%",
-    padding: "12px",
-    borderRadius: 10,
-    border: "1px solid #444",
-    marginTop: 10,
-    backgroundColor: "#1e1e1e", 
-    color: "#fff",              
-    
+  <DatePicker
+
+  selected={form.date ? new Date(form.date) : null}
+  
  
-    colorScheme: "dark",        
-    minHeight: "48px",          
-    boxSizing: "border-box"   
+  onChange={(date) => {
+    if (date) {
+      const year = date.getFullYear();
+      const month = String(date.getMonth() + 1).padStart(2, "0");
+      const day = String(date.getDate()).padStart(2, "0");
+      const formattedDate = `${year}-${month}-${day}`; 
+      
+      setForm({ ...form, date: formattedDate, time: "" });
+    } else {
+      setForm({ ...form, date: "", time: "" });
+    }
   }}
-  value={form.date}
-  onChange={(e) => setForm({ ...form, date: e.target.value, time: "" })}
+  dateFormat="dd.MM.yyyy"
+  placeholderText="Оберіть дату"
+  
+
+  customInput={
+    <input
+      type="text"
+      style={{
+        width: "100%",
+        padding: 12,
+        borderRadius: 10,
+        border: "1px solid #444",
+        marginTop: 10,
+        backgroundColor: "#1e1e1e",
+        color: "#fff",
+        fontSize: "16px",
+      }}
+    />
+  }
 />
+
 
 {form.date && (
   <div
