@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { createBooking, getAvailability } from "../api";
-import DatePicker from "react-datepicker";
+
 
 export default function Booking() {
   const [form, setForm] = useState({
@@ -90,43 +90,53 @@ export default function Booking() {
         <option value="Love story">Love story</option>
       </select>
 
-  <DatePicker
 
-  selected={form.date ? new Date(form.date) : null}
-  
- 
-  onChange={(date) => {
-    if (date) {
-      const year = date.getFullYear();
-      const month = String(date.getMonth() + 1).padStart(2, "0");
-      const day = String(date.getDate()).padStart(2, "0");
-      const formattedDate = `${year}-${month}-${day}`; 
+<div style={{ marginTop: 10 }}>
+  <span style={{ color: "#aaa", fontSize: "14px" }}>Оберіть дату:</span>
+  <div style={{ 
+    display: "flex", 
+    gap: "10px", 
+    marginTop: "8px", 
+    overflowX: "auto", 
+    paddingBottom: "5px" 
+  }}>
+    {[0, 1, 2, 3, 4].map((offset) => {
+     
+      const d = new Date();
+      d.setDate(d.getDate() + offset);
       
-      setForm({ ...form, date: formattedDate, time: "" });
-    } else {
-      setForm({ ...form, date: "", time: "" });
-    }
-  }}
-  dateFormat="dd.MM.yyyy"
-  placeholderText="Оберіть дату"
-  
+      const year = d.getFullYear();
+      const month = String(d.getMonth() + 1).padStart(2, "0");
+      const day = String(d.getDate()).padStart(2, "0");
+      
+      const dateString = `${year}-${month}-${day}`; 
+      const dateLabel = d.toLocaleDateString("uk-UA", { day: "numeric", month: "short" }); 
 
-  customInput={
-    <input
-      type="text"
-      style={{
-        width: "100%",
-        padding: 12,
-        borderRadius: 10,
-        border: "1px solid #444",
-        marginTop: 10,
-        backgroundColor: "#1e1e1e",
-        color: "#fff",
-        fontSize: "16px",
-      }}
-    />
-  }
-/>
+      const isSelected = form.date === dateString;
+
+      return (
+        <button
+          key={dateString}
+          type="button"
+          onClick={() => setForm({ ...form, date: dateString, time: "" })}
+          style={{
+            padding: "12px 20px",
+            borderRadius: "10px",
+            border: isSelected ? "1px solid #8fb0ff" : "1px solid #444",
+            backgroundColor: isSelected ? "#8fb0ff" : "#1e1e1e",
+            color: isSelected ? "#000" : "#fff",
+            cursor: "pointer",
+            fontWeight: isSelected ? "bold" : "normal",
+            whiteSpace: "nowrap",
+            transition: "all 0.2s ease"
+          }}
+        >
+          {offset === 0 ? "Сьогодні" : offset === 1 ? "Завтра" : dateLabel}
+        </button>
+      );
+    })}
+  </div>
+</div>
 
 
 {form.date && (
