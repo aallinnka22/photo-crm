@@ -501,7 +501,7 @@ export default function HomePage() {
           <div>
             <h2 className="title">Light, emotion, precision.</h2>
             <p className="lead">
-              Я – Аліна, фотограф. Люблю знімати людей, емоції та моменти, які
+              Я – Аліна, фотограф. Люблю фотографувати людей, емоції та моменти, які
               хочеться пам’ятати.
             </p>
 
