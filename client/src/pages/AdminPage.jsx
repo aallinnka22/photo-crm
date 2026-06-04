@@ -64,16 +64,6 @@ export default function AdminPage() {
   const [revBusy, setRevBusy] = useState(false);
   const [revMsg, setRevMsg] = useState("");
 
-function makeDate(dateStr, timeStr) {
-  const [y, m, d] = String(dateStr).split("-").map(Number);
-  const [hh, mm] = String(timeStr).split(":").map(Number);
-  return new Date(y, m - 1, d, hh, mm, 0);
-}
-
-function addMinutes(dateObj, minutes) {
-  return new Date(dateObj.getTime() + minutes * 60 * 1000);
-}
-
   async function load() {
     if (!token) return;
     try {
@@ -543,61 +533,53 @@ function addMinutes(dateObj, minutes) {
 
                   <div className="card admin-slot-box">
                     <div className="admin-slot-list">
-                    {(slotAvail || []).map((s) => {
-const slotStart = makeDate(slotDate, s.time);
-  const slotEnd = addMinutes(slotStart, 60);
+                      {(slotAvail || []).map((s) => {
+                        const b = findBookingForSlot(s.time);
+                        const kind = s.isFree
+                          ? "free"
+                          : b?.isBlock
+                            ? "blocked"
+                            : "booked";
 
- 
- const b = slotBookings?.find((bk) => {
-  return (
-    slotStart < new Date(bk.endAt) &&
-    slotEnd > new Date(bk.startAt)
-  );
-});
-
-  const kind = b
-    ? (b.isBlock ? "blocked" : "booked")
-    : "free";
-
-  return (
-    <button
-      key={s.time}
-      type="button"
-      className="btn"
-      disabled={slotBusy || kind === "booked"}
-      onClick={() => toggleSlot(s.time)}
-      title={
-        kind === "free"
-          ? "Вільний — натисни, щоб заблокувати"
-          : kind === "blocked"
-            ? "Заблоковано — натисни, щоб розблокувати"
-            : "Зайнято бронюванням клієнта"
-      }
-      style={{
-        padding: "8px 10px",
-        opacity: slotBusy
-          ? 0.6
-          : kind === "booked"
-            ? 0.35
-            : 1,
-        cursor: slotBusy
-          ? "wait"
-          : kind === "booked"
-            ? "not-allowed"
-            : "pointer",
-        border:
-          kind === "free"
-            ? "2px solid rgba(143, 176, 255, 0.55)"
-            : kind === "blocked"
-              ? "2px solid rgba(245, 27, 11, 0.85)"
-              : "1px solid rgba(255,255,255,0.12)",
-        background: "transparent",
-      }}
-    >
-      {s.time}
-    </button>
-  );
-})}
+                        return (
+                          <button
+                            key={s.time}
+                            type="button"
+                            className="btn"
+                            disabled={slotBusy || kind === "booked"}
+                            onClick={() => toggleSlot(s.time)}
+                            title={
+                              kind === "free"
+                                ? "Вільний — натисни, щоб заблокувати"
+                                : kind === "blocked"
+                                  ? "Заблоковано — натисни, щоб розблокувати"
+                                  : "Зайнято бронюванням клієнта"
+                            }
+                            style={{
+                              padding: "8px 10px",
+                              opacity: slotBusy
+                                ? 0.6
+                                : kind === "booked"
+                                  ? 0.35
+                                  : 1,
+                              cursor: slotBusy
+                                ? "wait"
+                                : kind === "booked"
+                                  ? "not-allowed"
+                                  : "pointer",
+                              border:
+                                kind === "free"
+                                  ? "2px solid rgba(143, 176, 255, 0.55)"
+                                  : kind === "blocked"
+                                    ? "2px solid rgba(245, 27, 11, 0.85)"
+                                    : "1px solid rgba(255,255,255,0.12)",
+                              background: "transparent",
+                            }}
+                          >
+                            {s.time}
+                          </button>
+                        );
+                      })}
                     </div>
 
                     {slotMsg ? (
