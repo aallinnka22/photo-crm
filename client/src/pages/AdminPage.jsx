@@ -280,13 +280,16 @@ export default function AdminPage() {
     setLbIndex((i) => (i + 1) % photos.length);
   }
 
-  function hhmm(dateStrOrObj) {
-    const d = new Date(dateStrOrObj);
-    if (Number.isNaN(d.getTime())) return "";
-    const hh = String(d.getHours()).padStart(2, "0");
-    const mm = String(d.getMinutes()).padStart(2, "0");
-    return `${hh}:${mm}`;
-  }
+function hhmm(dateStrOrObj) {
+  if (!dateStrOrObj) return "";
+  const d = new Date(dateStrOrObj);
+  if (Number.isNaN(d.getTime())) return "";
+  
+
+  const hh = String(d.getUTCHours()).padStart(2, "0");
+  const mm = String(d.getUTCMinutes()).padStart(2, "0");
+  return `${hh}:${mm}`;
+}
 
   function findBookingForSlot(timeStr) {
     return (slotBookings || []).find((b) => hhmm(b.startAt) === timeStr);
