@@ -112,7 +112,7 @@ router.post("/", upload.single("photo"), async (req, res) => {
 
     res.json({
       ok: true,
-      message: "✅ Дякую!",
+      message: "Дякую! Відгук відправлено ☺️",
     });
   } catch (e) {
     if (e instanceof multer.MulterError && e.code === "LIMIT_FILE_SIZE") {

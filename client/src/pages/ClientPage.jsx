@@ -179,7 +179,7 @@ export default function ClientPage() {
     if (!id) return;
 
     if ((photo?.status || "preview") === "final") {
-      setStatus("Це фінальне фото. Його можна завантажити.");
+    
       return;
     }
 
@@ -209,7 +209,7 @@ export default function ClientPage() {
 
     try {
       setSaving(true);
-      setStatus("Зберігаю вибір…");
+      setStatus("Збережено!");
 
       await saveMySelection(token, {
         selectedPhotoIds: photoIds,
@@ -237,7 +237,7 @@ export default function ClientPage() {
 
     try {
       setDownloadingId(photo?._id || photo?.id || "");
-      setStatus("Готую завантаження…");
+  
 
       const res = await fetch(url, { mode: "cors" });
       if (!res.ok) throw new Error(`Download failed (${res.status})`);
@@ -265,7 +265,7 @@ export default function ClientPage() {
 
   async function downloadAllFinal() {
     if (!finalPhotos.length) {
-      setStatus("Фінальних фото ще немає.");
+    
       return;
     }
 
