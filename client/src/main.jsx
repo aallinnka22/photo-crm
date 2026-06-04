@@ -3,7 +3,7 @@ import ReactDOM from "react-dom/client";
 import { HashRouter } from "react-router-dom"; // Змінили імпорт тут
 import App from "./App.jsx";
 import "./style.css";
-
+import "react-datepicker/dist/react-datepicker.css";
 try {
   const saved = localStorage.getItem("theme") || "dark";
   if (saved === "light") {

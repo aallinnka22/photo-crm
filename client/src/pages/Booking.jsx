@@ -1,7 +1,6 @@
 import { useEffect, useState } from "react";
 import { createBooking, getAvailability } from "../api";
-import DatePicker from "react-datepicker";
-import "react-datepicker/dist/react-datepicker.css";
+
 
 export default function Booking() {
   const [form, setForm] = useState({
@@ -62,39 +61,57 @@ export default function Booking() {
         onChange={(e) => setForm({ ...form, clientName: e.target.value })}
       />
 
-     <DatePicker
-  
-  selected={form.date ? new Date(form.date) : null}
-  onChange={(date) => {
-    if (date) {
-    
-      const formattedDate = date.toISOString().slice(0, 10);
-      setForm({ ...form, date: formattedDate, time: "" });
-    } else {
-      setForm({ ...form, date: "", time: "" });
-    }
-  }}
-  dateFormat="dd.MM.yyyy" 
-  placeholderText="Оберіть дату"
-  className="input" 
-  style={{
-    width: "100%",
-    padding: 12,
-    borderRadius: 10,
-    border: "1px solid #444",
-    marginTop: 10,
-  }}
-/>
+      <input
+        style={{
+          width: "100%",
+          padding: 12,
+          borderRadius: 10,
+          border: "1px solid #444",
+          marginTop: 10,
+        }}
+        placeholder="Телефон або email"
+        value={form.contact}
+        onChange={(e) => setForm({ ...form, contact: e.target.value })}
+      />
 
-{form.date && (
-  <div
-    style={{
-      marginTop: 12,
-      padding: 12,
-      border: "1px solid #444",
-      borderRadius: 12,
-    }}
-  >
+      <select
+        style={{
+          width: "100%",
+          padding: 12,
+          borderRadius: 10,
+          border: "1px solid #444",
+          marginTop: 10,
+        }}
+        value={form.packageName}
+        onChange={(e) => setForm({ ...form, packageName: e.target.value })}
+      >
+        <option value="Індивідуальна">Індивідуальна</option>
+        <option value="Сімейна">Сімейна</option>
+        <option value="Love story">Love story</option>
+      </select>
+
+      <input
+        type="date"
+        style={{
+          width: "100%",
+          padding: 12,
+          borderRadius: 10,
+          border: "1px solid #444",
+          marginTop: 10,
+        }}
+        value={form.date}
+        onChange={(e) => setForm({ ...form, date: e.target.value, time: "" })}
+      />
+
+      {form.date && (
+        <div
+          style={{
+            marginTop: 12,
+            padding: 12,
+            border: "1px solid #444",
+            borderRadius: 12,
+          }}
+        >
           <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
             {slots.map((s) => (
               <button
