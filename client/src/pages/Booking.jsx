@@ -86,7 +86,7 @@ export default function Booking() {
       >
         <option value="Індивідуальна">Індивідуальна</option>
         <option value="Сімейна">Сімейна</option>
-        <option value="Love Story">Love Story</option>
+        <option value="Love story">Love story</option>
       </select>
 
       <input
