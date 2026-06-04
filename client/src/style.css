@@ -2995,3 +2995,20 @@ select {
   gap: 12px;
   min-width: 0;
 }
+
+
+input[type="date"] {
+  color-scheme: dark light; 
+}
+
+
+input[type="date"]::-webkit-calendar-picker-indicator {
+  cursor: pointer;
+  border-radius: 4px;
+  filter: invert(0); 
+}
+
+
+input[type="date"]::-webkit-datetime-edit {
+  padding: 0 4px;
+}
