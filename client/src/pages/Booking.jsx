@@ -90,28 +90,35 @@ export default function Booking() {
         <option value="Love story">Love story</option>
       </select>
 
-      <input
-        type="date"
-        style={{
-          width: "100%",
-          padding: 12,
-          borderRadius: 10,
-          border: "1px solid #444",
-          marginTop: 10,
-        }}
-        value={form.date}
-        onChange={(e) => setForm({ ...form, date: e.target.value, time: "" })}
-      />
+     <input
+  type="date"
+  style={{
+    width: "100%",
+    padding: "12px",
+    borderRadius: 10,
+    border: "1px solid #444",
+    marginTop: 10,
+    backgroundColor: "#1e1e1e", 
+    color: "#fff",              
+    
+ 
+    colorScheme: "dark",        
+    minHeight: "48px",          
+    boxSizing: "border-box"   
+  }}
+  value={form.date}
+  onChange={(e) => setForm({ ...form, date: e.target.value, time: "" })}
+/>
 
-      {form.date && (
-        <div
-          style={{
-            marginTop: 12,
-            padding: 12,
-            border: "1px solid #444",
-            borderRadius: 12,
-          }}
-        >
+{form.date && (
+  <div
+    style={{
+      marginTop: 12,
+      padding: 12,
+      border: "1px solid #444",
+      borderRadius: 12,
+    }}
+  >
           <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
             {slots.map((s) => (
               <button
