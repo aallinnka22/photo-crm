@@ -962,9 +962,7 @@ export default function HomePage() {
                 <p className="muted booking-message">{bookMsg}</p>
               ) : null}
 
-              <p className="muted hint">
-                * Після заявки я звʼяжусь з вами для узгодження деталей.
-              </p>
+             
             </div>
           </div>
         </section>
