@@ -331,65 +331,118 @@ export default function HomePage() {
     }
   }
 
-  async function submitReview() {
-    setReviewMsg("");
 
-    const nm = reviewName.trim();
-    const tx = reviewText.trim();
-    const rt = Number(reviewRating);
+function compressImage(file, maxWidth = 1200, quality = 0.75) {
+  return new Promise((resolve) => {
+    const reader = new FileReader();
+    reader.readAsDataURL(file);
+    reader.onload = (event) => {
+      const img = new Image();
+      img.src = event.target.result;
+      img.onload = () => {
+        const canvas = document.createElement("canvas");
+        let width = img.width;
+        let height = img.height;
 
-    if (!nm || !tx) {
-      setReviewMsg("Заповніть імʼя та текст відгуку.");
-      return;
-    }
-    if (!Number.isFinite(rt) || rt < 1 || rt > 5) {
-      setReviewMsg(" Оцінка має бути від 1 до 5.");
-      return;
-    }
 
-    if (reviewPhotoFile && reviewPhotoFile.size > 5 * 1024 * 1024) {
-      setReviewMsg("Фото має бути до 5 МБ.");
-      return;
-    }
+        if (width > height) {
+          if (width > maxWidth) {
+            height = Math.round((height * maxWidth) / width);
+            width = maxWidth;
+          }
+        } else {
+          if (height > maxWidth) {
+            width = Math.round((width * maxWidth) / height);
+            height = maxWidth;
+          }
+        }
 
-    setReviewLoading(true);
-    try {
-      const formData = new FormData();
-      formData.append("name", nm);
-      formData.append("rating", String(rt));
-      formData.append("text", tx);
-      formData.append("contact", "");
-      formData.append("website", "");
-      formData.append("features", JSON.stringify(reviewFeatures));
-      formData.append("shootType", reviewShootType);
+        canvas.width = width;
+        canvas.height = height;
+        const ctx = canvas.getContext("2d");
+        ctx.drawImage(img, 0, 0, width, height);
 
-      if (reviewPhotoFile) {
-        formData.append("photo", reviewPhotoFile);
-      }
+   
+        canvas.toBlob(
+          (blob) => {
+            if (!blob) return resolve(file); 
+            const compressedFile = new File([blob], file.name, {
+              type: "image/jpeg",
+              lastModified: Date.now(),
+            });
+            resolve(compressedFile);
+          },
+          "image/jpeg",
+          quality
+        );
+      };
+    };
+  });
+}
 
-      const res = await fetch(`${API_BASE}/reviews`, {
-        method: "POST",
-        body: formData,
-      });
+async function submitReview() {
+  setReviewMsg("");
 
-      const data = await res.json().catch(() => ({}));
-      if (!res.ok)
-        throw new Error(data?.message || "Помилка відправки відгуку");
+  const nm = reviewName.trim();
+  const tx = reviewText.trim();
+  const rt = Number(reviewRating);
 
-      setReviewMsg(data?.message || "Дякую! Відгук відправлено ☺️");
-      setReviewName("");
-      setReviewRating(5);
-      setReviewText("");
-      setReviewFeatures(["Комфорт", "Підказки"]);
-      setReviewShootType(SHOOT_TYPES[0]);
-      setReviewPhotoFile(null);
-      setReviewPhotoPreview("");
-    } catch (e) {
-      setReviewMsg("❌ " + (e?.message || "Помилка"));
-    } finally {
-      setReviewLoading(false);
-    }
+  if (!nm || !tx) {
+    setReviewMsg("Заповніть імʼя та текст відгуку.");
+    return;
   }
+  if (!Number.isFinite(rt) || rt < 1 || rt > 5) {
+    setReviewMsg(" Оцінка має бути від 1 до 5.");
+    return;
+  }
+
+  if (reviewPhotoFile && reviewPhotoFile.size > 5 * 1024 * 1024) {
+    setReviewMsg("Фото має бути до 5 МБ.");
+    return;
+  }
+
+  setReviewLoading(true);
+  try {
+    const formData = new FormData();
+    formData.append("name", nm);
+    formData.append("rating", String(rt));
+    formData.append("text", tx);
+    formData.append("contact", "");
+    formData.append("website", "");
+    formData.append("features", JSON.stringify(reviewFeatures));
+    formData.append("shootType", reviewShootType);
+
+    // МАГІЯ СТИСНЕННЯ ТУТ:
+    if (reviewPhotoFile) {
+     
+      const compressed = await compressImage(reviewPhotoFile, 1200, 0.75);
+      formData.append("photo", compressed);
+      setReviewMsg(""); 
+    }
+
+    const res = await fetch(`${API_BASE}/reviews`, {
+      method: "POST",
+      body: formData,
+    });
+
+    const data = await res.json().catch(() => ({}));
+    if (!res.ok)
+      throw new Error(data?.message || "Помилка відправки відгуку");
+
+    setReviewMsg(data?.message || "Дякую! Відгук відправлено ☺️");
+    setReviewName("");
+    setReviewRating(5);
+    setReviewText("");
+    setReviewFeatures(["Комфорт", "Підказки"]);
+    setReviewShootType(SHOOT_TYPES[0]);
+    setReviewPhotoFile(null);
+    setReviewPhotoPreview("");
+  } catch (e) {
+    setReviewMsg("❌ " + (e?.message || "Помилка"));
+  } finally {
+    setReviewLoading(false);
+  }
+}
 
   const safeMod = (n, m) => ((n % m) + m) % m;
 
