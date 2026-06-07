@@ -23,7 +23,6 @@ const upload = multer({
   },
 });
 
-
 function uploadBufferToCloudinary(buffer, folder = "reviews") {
   return new Promise((resolve, reject) => {
     const stream = cloudinary.uploader.upload_stream(
@@ -62,7 +61,6 @@ router.post("/", upload.single("photo"), async (req, res) => {
     const { name, contact, rating, text, website, features, shootType } =
       req.body || {};
 
-
     if (website) return res.status(400).json({ message: "Помилка" });
 
     if (!name?.trim() || !text?.trim()) {
@@ -74,6 +72,7 @@ router.post("/", upload.single("photo"), async (req, res) => {
     const cleanRating = Math.max(1, Math.min(5, Number(rating || 5)));
 
     let cleanFeatures = [];
+
     if (Array.isArray(features)) {
       cleanFeatures = features;
     } else if (typeof features === "string") {
@@ -90,54 +89,37 @@ router.post("/", upload.single("photo"), async (req, res) => {
       .filter(Boolean)
       .slice(0, 20);
 
+    let photoUrl = "";
+
+    if (req.file?.buffer) {
+      const uploaded = await uploadBufferToCloudinary(
+        req.file.buffer,
+        "reviews",
+      );
+      photoUrl = uploaded.secure_url || "";
+    }
+
+    await Review.create({
+      name: String(name).trim(),
+      contact: contact ? String(contact).trim() : "",
+      rating: cleanRating,
+      text: String(text).trim(),
+      shootType: shootType ? String(shootType).trim() : "",
+      features: cleanFeatures,
+      photoUrl,
+      status: "pending",
+    });
 
     res.json({
       ok: true,
       message: "Дякую! Відгук відправлено ☺️",
     });
-
-
-    const saveReviewInBackground = async () => {
-      let photoUrl = "";
-
-
-      if (req.file?.buffer) {
-        const uploaded = await uploadBufferToCloudinary(
-          req.file.buffer,
-          "reviews",
-        );
-        photoUrl = uploaded.secure_url || "";
-      }
-
-
-      await Review.create({
-        name: String(name).trim(),
-        contact: contact ? String(contact).trim() : "",
-        rating: cleanRating,
-        text: String(text).trim(),
-        shootType: shootType ? String(shootType).trim() : "",
-        features: cleanFeatures,
-        photoUrl,
-        status: "pending",
-      });
-    };
-
-
-    saveReviewInBackground().catch((err) => {
-      console.error("Помилка збереження відгуку у фоні:", err?.message || err);
-    });
-
-    return;
   } catch (e) {
-
     if (e instanceof multer.MulterError && e.code === "LIMIT_FILE_SIZE") {
       return res.status(400).json({ message: "Фото має бути до 5 МБ." });
     }
 
-
-    if (!res.headersSent) {
-      res.status(500).json({ message: e.message || "Помилка відправки відгуку" });
-    }
+    res.status(500).json({ message: e.message || "Помилка відправки відгуку" });
   }
 });
 
