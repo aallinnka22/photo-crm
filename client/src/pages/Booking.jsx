@@ -1,7 +1,6 @@
 import { useEffect, useState } from "react";
 import { createBooking, getAvailability } from "../api";
 
-
 export default function Booking() {
   const [form, setForm] = useState({
     clientName: "",
@@ -90,64 +89,28 @@ export default function Booking() {
         <option value="Love story">Love story</option>
       </select>
 
+      <input
+        type="date"
+        style={{
+          width: "100%",
+          padding: 12,
+          borderRadius: 10,
+          border: "1px solid #444",
+          marginTop: 10,
+        }}
+        value={form.date}
+        onChange={(e) => setForm({ ...form, date: e.target.value, time: "" })}
+      />
 
-<div style={{ marginTop: 10 }}>
-  <span style={{ color: "#aaa", fontSize: "14px" }}>Оберіть дату:</span>
-  <div style={{ 
-    display: "flex", 
-    gap: "10px", 
-    marginTop: "8px", 
-    overflowX: "auto", 
-    paddingBottom: "5px" 
-  }}>
-    {[0, 1, 2, 3, 4].map((offset) => {
-     
-      const d = new Date();
-      d.setDate(d.getDate() + offset);
-      
-      const year = d.getFullYear();
-      const month = String(d.getMonth() + 1).padStart(2, "0");
-      const day = String(d.getDate()).padStart(2, "0");
-      
-      const dateString = `${year}-${month}-${day}`; 
-      const dateLabel = d.toLocaleDateString("uk-UA", { day: "numeric", month: "short" }); 
-
-      const isSelected = form.date === dateString;
-
-      return (
-        <button
-          key={dateString}
-          type="button"
-          onClick={() => setForm({ ...form, date: dateString, time: "" })}
+      {form.date && (
+        <div
           style={{
-            padding: "12px 20px",
-            borderRadius: "10px",
-            border: isSelected ? "1px solid #8fb0ff" : "1px solid #444",
-            backgroundColor: isSelected ? "#8fb0ff" : "#1e1e1e",
-            color: isSelected ? "#000" : "#fff",
-            cursor: "pointer",
-            fontWeight: isSelected ? "bold" : "normal",
-            whiteSpace: "nowrap",
-            transition: "all 0.2s ease"
+            marginTop: 12,
+            padding: 12,
+            border: "1px solid #444",
+            borderRadius: 12,
           }}
         >
-          {offset === 0 ? "Сьогодні" : offset === 1 ? "Завтра" : dateLabel}
-        </button>
-      );
-    })}
-  </div>
-</div>
-
-
-{form.date && (
-  <div
-    style={{
-      marginTop: 12,
-      padding: 12,
-      border: "1px solid #444",
-      borderRadius: 12,
-    }}
-  >
           <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
             {slots.map((s) => (
               <button
