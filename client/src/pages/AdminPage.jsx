@@ -171,7 +171,7 @@ export default function AdminPage() {
 
   async function doLogin() {
     try {
-      setStatus("Вхід...");
+   
       const data = await adminLogin(password);
       localStorage.setItem("adminToken", data.token);
       setToken(data.token);
