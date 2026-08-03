@@ -14,29 +14,36 @@ const reviewRoutes = require("./routes/reviewRoutes");
 
 const app = express();
 
-const allowedOrigins = [
-  process.env.FRONTEND_URL,
-  "http://localhost:5173",
-].filter(Boolean);
+const cors = require("cors");
 
-// ✅ ЯК МАЄ БУТИ:
+// Перераховуємо точні домени без wildcards
+const allowedOrigins = [
+  "http://localhost:5173",
+  "https://ashchphh.vercel.app"
+];
+
 app.use(
   cors({
-    origin: (origin, callback) => {
+    origin: function (origin, callback) {
+      // Дозволяємо запити без origin (наприклад, Postman або системні)
       if (!origin) return callback(null, true);
 
-      const isAllowed =
-        allowedOrigins.includes(origin) || origin.endsWith(".vercel.app");
-
-      if (isAllowed) return callback(null, true);
-
+      // Перевіряємо, чи є origin у списку дозволених або чи це поддомен vercel
+      if (allowedOrigins.indexOf(origin) !== -1 || origin.endsWith(".vercel.app")) {
+        // Повертаємо конкретний origin замість '*'
+        return callback(null, origin); 
+      }
+      
       return callback(new Error("Not allowed by CORS"));
     },
+    credentials: true, // 👈 Передаємо cookie
     methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
-    allowedHeaders: ["Content-Type", "Authorization"],
-    credentials: true, // <-- ПОТНІБНО ЗМІНИТИ НА true!
-  }),
+    allowedHeaders: ["Content-Type", "Authorization", "X-Requested-With", "Accept"],
+  })
 );
+
+// Обов'язково обробляємо preflight (OPTIONS) запити для всіх маршрутів
+app.options("*", cors());
 
 app.use(cookieParser()); // 3. Middleware для зчитування req.cookies
 app.use(express.json({ limit: "10mb" }));
