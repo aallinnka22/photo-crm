@@ -14,7 +14,7 @@ const reviewRoutes = require("./routes/reviewRoutes");
 
 const app = express();
 
-const cors = require("cors");
+
 
 // Перераховуємо точні домени без wildcards
 const allowedOrigins = [
