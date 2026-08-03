@@ -19,6 +19,7 @@ const allowedOrigins = [
   "http://localhost:5173",
 ].filter(Boolean);
 
+// ✅ ЯК МАЄ БУТИ:
 app.use(
   cors({
     origin: (origin, callback) => {
@@ -33,7 +34,7 @@ app.use(
     },
     methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
     allowedHeaders: ["Content-Type", "Authorization"],
-    credentials: true, // 2. Обов'язково true для передачі cookies з Vercel на Render!
+    credentials: true, // <-- ПОТНІБНО ЗМІНИТИ НА true!
   }),
 );
 
