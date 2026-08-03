@@ -35,4 +35,7 @@ router.get(
   mustFn(ctrl.downloadMyPhoto, "ctrl.downloadMyPhoto"),
 );
 
+
+router.post("/logout", mustFn(ctrl.logout, "ctrl.logout"));
+
 module.exports = router;

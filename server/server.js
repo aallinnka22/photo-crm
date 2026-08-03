@@ -3,6 +3,7 @@ const cors = require("cors");
 const mongoose = require("mongoose");
 const path = require("path");
 const fs = require("fs");
+const cookieParser = require("cookie-parser"); // 1. Підключаємо cookie-parser
 require("dotenv").config();
 
 const bookingRoutes = require("./routes/bookingRoutes");
@@ -12,7 +13,6 @@ const chatRoutes = require("./routes/chatRoutes");
 const reviewRoutes = require("./routes/reviewRoutes");
 
 const app = express();
-
 
 const allowedOrigins = [
   process.env.FRONTEND_URL,
@@ -33,11 +33,14 @@ app.use(
     },
     methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
     allowedHeaders: ["Content-Type", "Authorization"],
-    credentials: false,
+    credentials: true, // 2. Обов'язково true для передачі cookies з Vercel на Render!
   }),
 );
 
+app.use(cookieParser()); // 3. Middleware для зчитування req.cookies
 app.use(express.json({ limit: "10mb" }));
+
+
 
 
 const MONGO_URI =

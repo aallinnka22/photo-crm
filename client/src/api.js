@@ -1,8 +1,11 @@
 const API_BASE = import.meta.env.VITE_API_BASE || "http://localhost:5001/api";
 
-
-async function fetchJson(url, options) {
-  const res = await fetch(url, options);
+// Базова обгортка для fetch запитів із підтримкою Cookies
+async function fetchJson(url, options = {}) {
+  const res = await fetch(url, {
+    ...options,
+    credentials: "include", // Обов'язково для роботи з HTTP Cookies (cross-site Vercel <-> Render)
+  });
 
   const rawText = await res.text();
   let data = {};
@@ -19,10 +22,11 @@ async function fetchJson(url, options) {
   return data;
 }
 
+// ==================== ДОСТУПНІСТЬ ТА БРОНЮВАННЯ ====================
 
 export async function getAvailability(date) {
   return fetchJson(
-    `${API_BASE}/bookings/availability?date=${encodeURIComponent(date)}`,
+    `${API_BASE}/bookings/availability?date=${encodeURIComponent(date)}`
   );
 }
 
@@ -34,6 +38,7 @@ export async function createBooking(data) {
   });
 }
 
+// ==================== КЛІЄНТСЬКА ГАЛЕРЕЯ ====================
 
 export async function clientLogin(code) {
   return fetchJson(`${API_BASE}/galleries/login`, {
@@ -43,23 +48,21 @@ export async function clientLogin(code) {
   });
 }
 
-export async function getMyGallery(token) {
-  return fetchJson(`${API_BASE}/galleries/me/photos`, {
-    headers: { Authorization: `Bearer ${token}` },
-  });
+export async function getMyGallery() {
+  return fetchJson(`${API_BASE}/galleries/me/photos`);
 }
 
-export async function saveMySelection(token, payload) {
+export async function saveMySelection(payload) {
   return fetchJson(`${API_BASE}/galleries/me/selection`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
-      Authorization: `Bearer ${token}`,
     },
     body: JSON.stringify(payload),
   });
 }
 
+// ==================== АДМІНІСТРУВАННЯ ====================
 
 export async function adminLogin(password) {
   return fetchJson(`${API_BASE}/admin/login`, {
@@ -69,36 +72,31 @@ export async function adminLogin(password) {
   });
 }
 
-export async function adminListGalleries(token) {
-  return fetchJson(`${API_BASE}/admin/galleries`, {
-    headers: { Authorization: `Bearer ${token}` },
-  });
+export async function adminListGalleries() {
+  return fetchJson(`${API_BASE}/admin/galleries`);
 }
 
-export async function adminCreateGallery(token, payload) {
+export async function adminCreateGallery(payload) {
   return fetchJson(`${API_BASE}/admin/galleries`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
-      Authorization: `Bearer ${token}`,
     },
     body: JSON.stringify(payload),
   });
 }
 
-export async function adminGetGallery(token, galleryId) {
-  return fetchJson(`${API_BASE}/admin/galleries/${galleryId}`, {
-    headers: { Authorization: `Bearer ${token}` },
-  });
+export async function adminGetGallery(galleryId) {
+  return fetchJson(`${API_BASE}/admin/galleries/${galleryId}`);
 }
 
-export async function adminUploadPhotos(token, galleryId, files) {
+export async function adminUploadPhotos(galleryId, files) {
   const fd = new FormData();
   for (const f of files) fd.append("photos", f);
 
   const res = await fetch(`${API_BASE}/admin/galleries/${galleryId}/photos`, {
     method: "POST",
-    headers: { Authorization: `Bearer ${token}` },
+    credentials: "include", // Обов'язково для FormData
     body: fd,
   });
 
@@ -115,74 +113,68 @@ export async function adminUploadPhotos(token, galleryId, files) {
   return data;
 }
 
-export async function adminDeleteGallery(token, galleryId) {
+export async function adminDeleteGallery(galleryId) {
   return fetchJson(`${API_BASE}/admin/galleries/${galleryId}`, {
     method: "DELETE",
-    headers: { Authorization: `Bearer ${token}` },
   });
 }
 
-export async function adminDeletePhoto(token, galleryId, photoId) {
+export async function adminDeletePhoto(galleryId, photoId) {
   return fetchJson(
     `${API_BASE}/admin/galleries/${galleryId}/photos/${photoId}`,
     {
       method: "DELETE",
-      headers: { Authorization: `Bearer ${token}` },
-    },
+    }
   );
 }
 
-export async function adminSetPhotoStatus(token, galleryId, photoId, status) {
+export async function adminSetPhotoStatus(galleryId, photoId, status) {
   return fetchJson(
     `${API_BASE}/admin/galleries/${galleryId}/photos/${photoId}`,
     {
       method: "PATCH",
       headers: {
         "Content-Type": "application/json",
-        Authorization: `Bearer ${token}`,
       },
       body: JSON.stringify({ status }),
-    },
+    }
   );
 }
 
+// ==================== АДМІН: БРОНЮВАННЯ ====================
 
-export async function adminListBookings(token, date) {
+export async function adminListBookings(date) {
   const q = date ? `?date=${encodeURIComponent(date)}` : "";
-  return fetchJson(`${API_BASE}/bookings${q}`, {
-    headers: { Authorization: `Bearer ${token}` },
-  });
+  return fetchJson(`${API_BASE}/bookings${q}`);
 }
 
-export async function adminCreateBlock(token, payload) {
+export async function adminCreateBlock(payload) {
   return fetchJson(`${API_BASE}/bookings/block`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
-      Authorization: `Bearer ${token}`,
     },
     body: JSON.stringify(payload),
   });
 }
 
-export async function adminUpdateBooking(token, id, payload) {
+export async function adminUpdateBooking(id, payload) {
   return fetchJson(`${API_BASE}/bookings/${id}`, {
     method: "PUT",
     headers: {
       "Content-Type": "application/json",
-      Authorization: `Bearer ${token}`,
     },
     body: JSON.stringify(payload),
   });
 }
 
-export async function adminDeleteBooking(token, id) {
+export async function adminDeleteBooking(id) {
   return fetchJson(`${API_BASE}/bookings/${id}`, {
     method: "DELETE",
-    headers: { Authorization: `Bearer ${token}` },
   });
 }
 
+// ==================== ВІДГУКИ ====================
 
 export async function getReviews(limit = 20) {
   return fetchJson(`${API_BASE}/reviews?limit=${encodeURIComponent(limit)}`);
@@ -196,30 +188,38 @@ export async function createReview(payload) {
   });
 }
 
-
-export async function adminListReviews(token, status = "pending") {
+export async function adminListReviews(status = "pending") {
   return fetchJson(
-    `${API_BASE}/admin/reviews?status=${encodeURIComponent(status)}`,
-    {
-      headers: { Authorization: `Bearer ${token}` },
-    },
+    `${API_BASE}/admin/reviews?status=${encodeURIComponent(status)}`
   );
 }
 
-export async function adminSetReviewStatus(token, id, status) {
+export async function adminSetReviewStatus(id, status) {
   return fetchJson(`${API_BASE}/admin/reviews/${id}`, {
     method: "PATCH",
     headers: {
       "Content-Type": "application/json",
-      Authorization: `Bearer ${token}`,
     },
     body: JSON.stringify({ status }),
   });
 }
 
-export async function adminDeleteReview(token, id) {
+export async function adminDeleteReview(id) {
   return fetchJson(`${API_BASE}/admin/reviews/${id}`, {
     method: "DELETE",
-    headers: { Authorization: `Bearer ${token}` },
+  });
+}
+
+// Вихід для адміна
+export async function adminLogout() {
+  return fetchJson(`${API_BASE}/admin/logout`, {
+    method: "POST",
+  });
+}
+
+// Вихід для клієнта галереї
+export async function clientLogout() {
+  return fetchJson(`${API_BASE}/galleries/logout`, {
+    method: "POST",
   });
 }

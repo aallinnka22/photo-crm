@@ -57,7 +57,6 @@ async function loginByCode(req, res) {
 
     const lookup = makeCodeLookup(code);
 
-
     const gallery = await Gallery.findOne({
       codeLookup: lookup,
       $or: [{ isActive: true }, { isActive: { $exists: false } }],
@@ -65,7 +64,6 @@ async function loginByCode(req, res) {
 
     if (!gallery) return res.status(401).json({ message: "Invalid code" });
 
-  
     const ok = await bcrypt.compare(code, gallery.accessCodeHash);
     if (!ok) return res.status(401).json({ message: "Invalid code" });
 
@@ -75,7 +73,15 @@ async function loginByCode(req, res) {
       { expiresIn: "30d" },
     );
 
-    return res.json({ token });
+    // Встановлюємо Cookie клієнта для галереї
+    res.cookie("client_token", token, {
+      httpOnly: true,
+      secure: true,
+      sameSite: "none",
+      maxAge: 30 * 24 * 60 * 60 * 1000, // 30 днів
+    });
+
+    return res.json({ ok: true, galleryId: gallery._id });
   } catch (e) {
     console.error("loginByCode error:", e);
     return res.status(500).json({ message: "Server error" });
@@ -196,9 +202,21 @@ async function downloadMyPhoto(req, res) {
   }
 }
 
+
+// Додати в galleryController.js
+async function logout(req, res) {
+  res.clearCookie("client_token", {
+    httpOnly: true,
+    secure: true,
+    sameSite: "none",
+  });
+  return res.json({ ok: true, message: "Logged out successfully" });
+}
+
 module.exports = {
   loginByCode,
   getMyPhotos,
   saveMySelection,
   downloadMyPhoto,
+  logout,
 };

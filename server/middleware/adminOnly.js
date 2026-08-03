@@ -1,14 +1,14 @@
 const jwt = require("jsonwebtoken");
 
 module.exports = function adminOnly(req, res, next) {
-  const header = req.headers.authorization;
-  if (!header) return res.status(401).json({ message: "No token provided" });
+  // Зчитуємо токен із cookie замість Authorization header[cite: 13]
+  const token = req.cookies?.admin_token;
+  if (!token) return res.status(401).json({ message: "No token provided in cookies" });
 
   try {
-    const token = header.split(" ")[1];
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
 
-    // перевірка ролі адміна
+    // Перевірка ролі адміна
     if (decoded?.role !== "admin") {
       return res.status(403).json({ message: "Admin only" });
     }

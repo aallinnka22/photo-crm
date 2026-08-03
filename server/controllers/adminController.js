@@ -33,7 +33,6 @@ function makeSlug(clientName) {
   return `${base}-${yyyy}-${mm}-${dd}-${randomCode(4).toLowerCase()}`;
 }
 
-
 exports.login = async (req, res) => {
   try {
     ensureEnv("JWT_SECRET");
@@ -53,11 +52,29 @@ exports.login = async (req, res) => {
       { expiresIn: "12h" },
     );
 
-    return res.json({ token });
+    // Встановлюємо Cookie для адміна
+    res.cookie("admin_token", token, {
+      httpOnly: true,
+      secure: true,      // Обов'язково для HTTPS (Vercel/Render)
+      sameSite: "none",  // Обов'язково для запитів між різними доменами
+      maxAge: 12 * 60 * 60 * 1000,
+    });
+
+    return res.json({ ok: true, message: "Logged in successfully" });
   } catch (e) {
     console.error("admin login error:", e.message);
     return res.status(500).json({ message: "Server error" });
   }
+};
+
+// Також додайте метод для виходу з акаунту (Logout):
+exports.logout = async (req, res) => {
+  res.clearCookie("admin_token", {
+    httpOnly: true,
+    secure: true,
+    sameSite: "none",
+  });
+  return res.json({ ok: true, message: "Logged out" });
 };
 
 exports.createGallery = async (req, res) => {
@@ -319,4 +336,14 @@ exports.deleteReview = async (req, res) => {
   } catch (e) {
     return res.status(500).json({ message: "Помилка видалення" });
   }
+};
+
+// Додати в adminController.js
+exports.logout = async (req, res) => {
+  res.clearCookie("admin_token", {
+    httpOnly: true,
+    secure: true,
+    sameSite: "none",
+  });
+  return res.json({ ok: true, message: "Logged out successfully" });
 };
