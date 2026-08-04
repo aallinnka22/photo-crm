@@ -1,10 +1,21 @@
 const API_BASE = import.meta.env.VITE_API_BASE || "http://localhost:5001/api";
 
-// Базова обгортка для fetch запитів із підтримкою Cookies
+// Базова обгортка для fetch запитів із підтримкою Cookies та Headers
 async function fetchJson(url, options = {}) {
+  const token = localStorage.getItem("client_token") || localStorage.getItem("adminToken");
+  
+  const headers = {
+    ...options.headers,
+  };
+
+  if (token) {
+    headers["Authorization"] = `Bearer ${token}`;
+  }
+
   const res = await fetch(url, {
     ...options,
-    credentials: "include", // Обов'язково для роботи з HTTP Cookies (cross-site Vercel <-> Render)
+    credentials: "include", // Залишаємо для збереження cookies
+    headers,
   });
 
   const rawText = await res.text();
@@ -22,7 +33,6 @@ async function fetchJson(url, options = {}) {
   return data;
 }
 
-// Допоміжна перевірка на невалідні ID або параметри
 const isInvalid = (val) => !val || val === "undefined" || val === "null";
 
 // ==================== ДОСТУПНІСТЬ ТА БРОНЮВАННЯ ====================
@@ -45,11 +55,15 @@ export async function createBooking(data) {
 // ==================== КЛІЄНТСЬКА ГАЛЕРЕЯ ====================
 
 export async function clientLogin(code) {
-  return fetchJson(`${API_BASE}/galleries/login`, {
+  const data = await fetchJson(`${API_BASE}/galleries/login`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ code }),
   });
+  if (data?.token) {
+    localStorage.setItem("client_token", data.token);
+  }
+  return data;
 }
 
 export async function getMyGallery() {
@@ -69,11 +83,15 @@ export async function saveMySelection(payload) {
 // ==================== АДМІНІСТРУВАННЯ ====================
 
 export async function adminLogin(password) {
-  return fetchJson(`${API_BASE}/admin/login`, {
+  const data = await fetchJson(`${API_BASE}/admin/login`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ password }),
   });
+  if (data?.token) {
+    localStorage.setItem("adminToken", data.token);
+  }
+  return data;
 }
 
 export async function adminListGalleries() {
@@ -91,7 +109,6 @@ export async function adminCreateGallery(payload) {
 }
 
 export async function adminGetGallery(galleryId) {
-  // 🛡️ Захист: якщо galleryId немає або це рядок "undefined", зупиняємо запит
   if (isInvalid(galleryId)) {
     console.warn("adminGetGallery called without valid galleryId");
     return null;
@@ -100,7 +117,6 @@ export async function adminGetGallery(galleryId) {
 }
 
 export async function adminUploadPhotos(galleryId, files) {
-  // 🛡️ Захист від відсутності galleryId при завантаженні
   if (isInvalid(galleryId)) {
     throw new Error("Не вказано ID галереї для завантаження фотографій");
   }
@@ -108,9 +124,14 @@ export async function adminUploadPhotos(galleryId, files) {
   const fd = new FormData();
   for (const f of files) fd.append("photos", f);
 
+  const token = localStorage.getItem("adminToken");
+  const headers = {};
+  if (token) headers["Authorization"] = `Bearer ${token}`;
+
   const res = await fetch(`${API_BASE}/admin/galleries/${galleryId}/photos`, {
     method: "POST",
-    credentials: "include", // Обов'язково для FormData
+    credentials: "include",
+    headers,
     body: fd,
   });
 
@@ -232,6 +253,7 @@ export async function adminDeleteReview(id) {
 
 // Вихід для адміна
 export async function adminLogout() {
+  localStorage.removeItem("adminToken");
   return fetchJson(`${API_BASE}/admin/logout`, {
     method: "POST",
   });
@@ -239,6 +261,7 @@ export async function adminLogout() {
 
 // Вихід для клієнта галереї
 export async function clientLogout() {
+  localStorage.removeItem("client_token");
   return fetchJson(`${API_BASE}/galleries/logout`, {
     method: "POST",
   });

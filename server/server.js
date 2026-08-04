@@ -3,7 +3,7 @@ const cors = require("cors");
 const mongoose = require("mongoose");
 const path = require("path");
 const fs = require("fs");
-const cookieParser = require("cookie-parser"); // 1. Підключаємо cookie-parser
+const cookieParser = require("cookie-parser");
 require("dotenv").config();
 
 const bookingRoutes = require("./routes/bookingRoutes");
@@ -14,42 +14,38 @@ const reviewRoutes = require("./routes/reviewRoutes");
 
 const app = express();
 
-
-
-// Перераховуємо точні домени без wildcards
 const allowedOrigins = [
   "http://localhost:5173",
+  "http://localhost:3000",
   "https://ashchphh.vercel.app"
 ];
 
-app.use(
-  cors({
-    origin: function (origin, callback) {
-      // Дозволяємо запити без origin (наприклад, Postman або системні)
-      if (!origin) return callback(null, true);
+const corsOptions = {
+  origin: function (origin, callback) {
+    if (!origin) return callback(null, true);
+    if (
+      allowedOrigins.includes(origin) ||
+      origin.endsWith(".vercel.app")
+    ) {
+      return callback(null, origin);
+    }
+    return callback(new Error("Not allowed by CORS"));
+  },
+  credentials: true,
+  methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
+  allowedHeaders: [
+    "Content-Type",
+    "Authorization",
+    "X-Requested-With",
+    "Accept"
+  ],
+};
 
-      // Перевіряємо, чи є origin у списку дозволених або чи це поддомен vercel
-      if (allowedOrigins.indexOf(origin) !== -1 || origin.endsWith(".vercel.app")) {
-        // Повертаємо конкретний origin замість '*'
-        return callback(null, origin); 
-      }
-      
-      return callback(new Error("Not allowed by CORS"));
-    },
-    credentials: true, // 👈 Передаємо cookie
-    methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
-    allowedHeaders: ["Content-Type", "Authorization", "X-Requested-With", "Accept"],
-  })
-);
+app.use(cors(corsOptions));
+app.options("*", cors(corsOptions));
 
-// Обов'язково обробляємо preflight (OPTIONS) запити для всіх маршрутів
-app.options("*", cors());
-
-app.use(cookieParser()); // 3. Middleware для зчитування req.cookies
+app.use(cookieParser());
 app.use(express.json({ limit: "10mb" }));
-
-
-
 
 const MONGO_URI =
   process.env.MONGO_URI || "mongodb://127.0.0.1:27017/photo_site";
@@ -61,7 +57,6 @@ mongoose
     console.error("MongoDB connection error:", err.message);
     process.exit(1);
   });
-
 
 app.get("/api/health", (req, res) => {
   res.json({ ok: true });
@@ -85,7 +80,6 @@ if (fs.existsSync(indexPath)) {
 } else {
   console.log("🟨 Static site disabled (no site/index.html)");
 }
-
 
 const PORT = process.env.PORT || 5001;
 app.listen(PORT, "0.0.0.0", () => {
