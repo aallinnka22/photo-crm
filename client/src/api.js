@@ -87,10 +87,20 @@ export async function adminCreateGallery(payload) {
 }
 
 export async function adminGetGallery(galleryId) {
+  // 🛡️ Захист: якщо galleryId немає або це рядок "undefined", зупиняємо запит
+  if (!galleryId || galleryId === "undefined") {
+    console.warn("adminGetGallery called without valid galleryId");
+    return null;
+  }
   return fetchJson(`${API_BASE}/admin/galleries/${galleryId}`);
 }
 
 export async function adminUploadPhotos(galleryId, files) {
+  // 🛡️ Захист від відсутності galleryId при завантаженні
+  if (!galleryId || galleryId === "undefined") {
+    throw new Error("Не вказано ID галереї для завантаження фотографій");
+  }
+
   const fd = new FormData();
   for (const f of files) fd.append("photos", f);
 
@@ -112,7 +122,6 @@ export async function adminUploadPhotos(galleryId, files) {
     throw new Error(data?.message || `Upload failed (${res.status})`);
   return data;
 }
-
 export async function adminDeleteGallery(galleryId) {
   return fetchJson(`${API_BASE}/admin/galleries/${galleryId}`, {
     method: "DELETE",

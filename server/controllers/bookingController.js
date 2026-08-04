@@ -116,7 +116,9 @@ exports.getBookings = async (req, res) => {
     const { date } = req.query;
 
     const q = {};
-    if (date) {
+
+    // Перевіряємо, що date існує і це НЕ рядок "undefined" чи "null"
+    if (date && date !== "undefined" && date !== "null") {
       const startDay = makeDate(date, "00:00");
       const endDay = makeDate(date, "23:59");
       q.startAt = { $lt: endDay };

@@ -89,23 +89,26 @@ export default function AdminPage() {
   }, [token]);
 
   useEffect(() => {
-    async function loadActive() {
-      if (!token || !activeId) return;
-      try {
-        const data = await adminGetGallery(token, activeId);
-        const fresh = data?.gallery;
-        if (!fresh) return;
+  async function loadActive() {
+    // 1. Перевіряємо, що activeId дійсно існує і це НЕ рядок "undefined" чи "null"
+    if (!activeId || activeId === "undefined" || activeId === "null") return;
 
-        setGalleries((prev) =>
-          prev.map((g) => (g._id === activeId ? { ...g, ...fresh } : g)),
-        );
-      } catch (e) {
-        setStatus(e.message);
-      }
+    try {
+      // 2. Передаємо ТІЛЬКИ activeId (без token, бо токен тепер у cookies)
+      const data = await adminGetGallery(activeId); 
+      const fresh = data?.gallery;
+      if (!fresh) return;
+
+      setGalleries((prev) =>
+        prev.map((g) => (g._id === activeId ? { ...g, ...fresh } : g)),
+      );
+    } catch (e) {
+      setStatus(e.message);
     }
+  }
 
-    loadActive();
-  }, [token, activeId]);
+  loadActive();
+}, [activeId]); // 👈 token з масиву залежностей теж прибираємо
 
   useEffect(() => {
     let cancelled = false;
