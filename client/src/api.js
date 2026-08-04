@@ -22,9 +22,13 @@ async function fetchJson(url, options = {}) {
   return data;
 }
 
+// Допоміжна перевірка на невалідні ID або параметри
+const isInvalid = (val) => !val || val === "undefined" || val === "null";
+
 // ==================== ДОСТУПНІСТЬ ТА БРОНЮВАННЯ ====================
 
 export async function getAvailability(date) {
+  if (isInvalid(date)) return { availableTimes: [] };
   return fetchJson(
     `${API_BASE}/bookings/availability?date=${encodeURIComponent(date)}`
   );
@@ -88,7 +92,7 @@ export async function adminCreateGallery(payload) {
 
 export async function adminGetGallery(galleryId) {
   // 🛡️ Захист: якщо galleryId немає або це рядок "undefined", зупиняємо запит
-  if (!galleryId || galleryId === "undefined") {
+  if (isInvalid(galleryId)) {
     console.warn("adminGetGallery called without valid galleryId");
     return null;
   }
@@ -97,7 +101,7 @@ export async function adminGetGallery(galleryId) {
 
 export async function adminUploadPhotos(galleryId, files) {
   // 🛡️ Захист від відсутності galleryId при завантаженні
-  if (!galleryId || galleryId === "undefined") {
+  if (isInvalid(galleryId)) {
     throw new Error("Не вказано ID галереї для завантаження фотографій");
   }
 
@@ -122,13 +126,16 @@ export async function adminUploadPhotos(galleryId, files) {
     throw new Error(data?.message || `Upload failed (${res.status})`);
   return data;
 }
+
 export async function adminDeleteGallery(galleryId) {
+  if (isInvalid(galleryId)) return null;
   return fetchJson(`${API_BASE}/admin/galleries/${galleryId}`, {
     method: "DELETE",
   });
 }
 
 export async function adminDeletePhoto(galleryId, photoId) {
+  if (isInvalid(galleryId) || isInvalid(photoId)) return null;
   return fetchJson(
     `${API_BASE}/admin/galleries/${galleryId}/photos/${photoId}`,
     {
@@ -138,6 +145,7 @@ export async function adminDeletePhoto(galleryId, photoId) {
 }
 
 export async function adminSetPhotoStatus(galleryId, photoId, status) {
+  if (isInvalid(galleryId) || isInvalid(photoId)) return null;
   return fetchJson(
     `${API_BASE}/admin/galleries/${galleryId}/photos/${photoId}`,
     {
@@ -153,7 +161,7 @@ export async function adminSetPhotoStatus(galleryId, photoId, status) {
 // ==================== АДМІН: БРОНЮВАННЯ ====================
 
 export async function adminListBookings(date) {
-  const q = date ? `?date=${encodeURIComponent(date)}` : "";
+  const q = !isInvalid(date) ? `?date=${encodeURIComponent(date)}` : "";
   return fetchJson(`${API_BASE}/bookings${q}`);
 }
 
@@ -168,6 +176,7 @@ export async function adminCreateBlock(payload) {
 }
 
 export async function adminUpdateBooking(id, payload) {
+  if (isInvalid(id)) return null;
   return fetchJson(`${API_BASE}/bookings/${id}`, {
     method: "PUT",
     headers: {
@@ -178,6 +187,7 @@ export async function adminUpdateBooking(id, payload) {
 }
 
 export async function adminDeleteBooking(id) {
+  if (isInvalid(id)) return null;
   return fetchJson(`${API_BASE}/bookings/${id}`, {
     method: "DELETE",
   });
@@ -198,12 +208,12 @@ export async function createReview(payload) {
 }
 
 export async function adminListReviews(status = "pending") {
-  return fetchJson(
-    `${API_BASE}/admin/reviews?status=${encodeURIComponent(status)}`
-  );
+  const q = !isInvalid(status) ? `?status=${encodeURIComponent(status)}` : "";
+  return fetchJson(`${API_BASE}/admin/reviews${q}`);
 }
 
 export async function adminSetReviewStatus(id, status) {
+  if (isInvalid(id)) return null;
   return fetchJson(`${API_BASE}/admin/reviews/${id}`, {
     method: "PATCH",
     headers: {
@@ -214,6 +224,7 @@ export async function adminSetReviewStatus(id, status) {
 }
 
 export async function adminDeleteReview(id) {
+  if (isInvalid(id)) return null;
   return fetchJson(`${API_BASE}/admin/reviews/${id}`, {
     method: "DELETE",
   });
