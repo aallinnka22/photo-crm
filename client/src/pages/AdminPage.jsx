@@ -17,11 +17,12 @@ import {
   adminListReviews,
   adminSetReviewStatus,
   adminDeleteReview,
+  adminLogout,
 } from "../api";
 
 export default function AdminPage() {
-  const [token, setToken] = useState(
-    () => localStorage.getItem("adminToken") || "",
+  const [isAuthenticated, setIsAuthenticated] = useState(
+    () => localStorage.getItem("adminAuth") === "true"
   );
   const [password, setPassword] = useState("");
   const [status, setStatus] = useState("");
@@ -41,7 +42,7 @@ export default function AdminPage() {
 
   const active = useMemo(
     () => galleries.find((g) => g._id === activeId),
-    [galleries, activeId],
+    [galleries, activeId]
   );
   const photos = active?.photos || [];
   const lbPhoto = photos[lbIndex];
@@ -52,7 +53,7 @@ export default function AdminPage() {
   }, [active]);
 
   const [slotDate, setSlotDate] = useState(() =>
-    new Date().toISOString().slice(0, 10),
+    new Date().toISOString().slice(0, 10)
   );
   const [slotAvail, setSlotAvail] = useState([]);
   const [slotBookings, setSlotBookings] = useState([]);
@@ -65,16 +66,16 @@ export default function AdminPage() {
   const [revMsg, setRevMsg] = useState("");
 
   async function load() {
-    if (!token) return;
+    if (!isAuthenticated) return;
     try {
-      const data = await adminListGalleries(token);
+      const data = await adminListGalleries();
       const items = data.items || [];
       setGalleries(items);
       if (!activeId && items[0]?._id) setActiveId(items[0]._id);
     } catch (e) {
       setStatus(e.message);
-      localStorage.removeItem("adminToken");
-      setToken("");
+      localStorage.removeItem("adminAuth");
+      setIsAuthenticated(false);
     }
   }
 
@@ -85,36 +86,33 @@ export default function AdminPage() {
 
   useEffect(() => {
     load();
-    
-  }, [token]);
+  }, [isAuthenticated]);
 
   useEffect(() => {
-  async function loadActive() {
-    // 1. Перевіряємо, що activeId дійсно існує і це НЕ рядок "undefined" чи "null"
-    if (!activeId || activeId === "undefined" || activeId === "null") return;
+    async function loadActive() {
+      if (!activeId || activeId === "undefined" || activeId === "null") return;
 
-    try {
-      // 2. Передаємо ТІЛЬКИ activeId (без token, бо токен тепер у cookies)
-      const data = await adminGetGallery(activeId); 
-      const fresh = data?.gallery;
-      if (!fresh) return;
+      try {
+        const data = await adminGetGallery(activeId);
+        const fresh = data?.gallery;
+        if (!fresh) return;
 
-      setGalleries((prev) =>
-        prev.map((g) => (g._id === activeId ? { ...g, ...fresh } : g)),
-      );
-    } catch (e) {
-      setStatus(e.message);
+        setGalleries((prev) =>
+          prev.map((g) => (g._id === activeId ? { ...g, ...fresh } : g))
+        );
+      } catch (e) {
+        setStatus(e.message);
+      }
     }
-  }
 
-  loadActive();
-}, [activeId]); // 👈 token з масиву залежностей теж прибираємо
+    loadActive();
+  }, [activeId]);
 
   useEffect(() => {
     let cancelled = false;
 
     async function loadSlots() {
-      if (!token || !slotDate) return;
+      if (!isAuthenticated || !slotDate) return;
 
       setSlotBusy(true);
       setSlotMsg("");
@@ -122,7 +120,7 @@ export default function AdminPage() {
       try {
         const [avail, book] = await Promise.all([
           getAvailability(slotDate),
-          adminListBookings(token, slotDate),
+          adminListBookings(slotDate),
         ]);
 
         if (cancelled) return;
@@ -144,19 +142,19 @@ export default function AdminPage() {
     return () => {
       cancelled = true;
     };
-  }, [token, slotDate]);
+  }, [isAuthenticated, slotDate]);
 
   useEffect(() => {
     let cancelled = false;
 
     async function loadReviews() {
-      if (!token) return;
+      if (!isAuthenticated) return;
 
       setRevBusy(true);
       setRevMsg("");
 
       try {
-        const data = await adminListReviews(token, revStatusTab);
+        const data = await adminListReviews(revStatusTab);
         if (cancelled) return;
         setRevItems(Array.isArray(data?.items) ? data.items : []);
       } catch (e) {
@@ -170,14 +168,13 @@ export default function AdminPage() {
     return () => {
       cancelled = true;
     };
-  }, [token, revStatusTab]);
+  }, [isAuthenticated, revStatusTab]);
 
   async function doLogin() {
     try {
-   
-      const data = await adminLogin(password);
-      localStorage.setItem("adminToken", data.token);
-      setToken(data.token);
+      await adminLogin(password);
+      localStorage.setItem("adminAuth", "true");
+      setIsAuthenticated(true);
       setPassword("");
       setStatus("");
     } catch (e) {
@@ -185,9 +182,14 @@ export default function AdminPage() {
     }
   }
 
-  function logout() {
-    localStorage.removeItem("adminToken");
-    setToken("");
+  async function logout() {
+    try {
+      await adminLogout();
+    } catch (e) {
+      console.error(e);
+    }
+    localStorage.removeItem("adminAuth");
+    setIsAuthenticated(false);
     setStatus("");
     setGalleries([]);
     setActiveId("");
@@ -206,7 +208,7 @@ export default function AdminPage() {
 
   async function createGallery() {
     try {
-      const data = await adminCreateGallery(token, create);
+      const data = await adminCreateGallery(create);
       setNewCode(data.accessCode);
       setCreate({ clientName: "", selectionLimit: 10 });
       await load();
@@ -220,7 +222,7 @@ export default function AdminPage() {
     if (!files.length || !activeId) return;
 
     try {
-      await adminUploadPhotos(token, activeId, files);
+      await adminUploadPhotos(activeId, files);
       await load();
       e.target.value = "";
     } catch (err) {
@@ -231,7 +233,7 @@ export default function AdminPage() {
   async function removePhoto(photoId) {
     if (!activeId) return;
     try {
-      await adminDeletePhoto(token, activeId, photoId);
+      await adminDeletePhoto(activeId, photoId);
       await load();
     } catch (e) {
       setStatus(e.message);
@@ -239,10 +241,9 @@ export default function AdminPage() {
   }
 
   async function removeGallery(galleryId) {
-    if (!token) return;
     if (!window.confirm("Видалити галерею разом з усіма фото?")) return;
     try {
-      await adminDeleteGallery(token, galleryId);
+      await adminDeleteGallery(galleryId);
       if (activeId === galleryId) setActiveId("");
       setNewCode("");
       setLbOpen(false);
@@ -256,7 +257,7 @@ export default function AdminPage() {
   async function setPhotoStatus(photoId, newStatus) {
     if (!activeId) return;
     try {
-      await adminSetPhotoStatus(token, activeId, photoId, newStatus);
+      await adminSetPhotoStatus(activeId, photoId, newStatus);
       await load();
     } catch (e) {
       setStatus(e.message);
@@ -283,39 +284,38 @@ export default function AdminPage() {
     setLbIndex((i) => (i + 1) % photos.length);
   }
 
-function hhmm(dateStrOrObj) {
-  if (!dateStrOrObj) return "";
-  const d = new Date(dateStrOrObj);
-  if (Number.isNaN(d.getTime())) return "";
-  
+  function hhmm(dateStrOrObj) {
+    if (!dateStrOrObj) return "";
+    const d = new Date(dateStrOrObj);
+    if (Number.isNaN(d.getTime())) return "";
 
-  const hh = String(d.getUTCHours()).padStart(2, "0");
-  const mm = String(d.getUTCMinutes()).padStart(2, "0");
-  return `${hh}:${mm}`;
-}
+    const hh = String(d.getHours()).padStart(2, "0");
+    const mm = String(d.getMinutes()).padStart(2, "0");
+    return `${hh}:${mm}`;
+  }
 
   function findBookingForSlot(timeStr) {
     return (slotBookings || []).find((b) => hhmm(b.startAt) === timeStr);
   }
 
   async function refreshSlots() {
-    if (!token || !slotDate) return;
+    if (!slotDate) return;
     const [avail, book] = await Promise.all([
       getAvailability(slotDate),
-      adminListBookings(token, slotDate),
+      adminListBookings(slotDate),
     ]);
     setSlotAvail(Array.isArray(avail?.slots) ? avail.slots : []);
     setSlotBookings(Array.isArray(book?.bookings) ? book.bookings : []);
   }
 
   async function toggleSlot(timeStr) {
-    if (!token || !slotDate || !timeStr) return;
+    if (!slotDate || !timeStr) return;
 
     const b = findBookingForSlot(timeStr);
 
     if (b && b.isBlock) {
       try {
-        await adminDeleteBooking(token, b._id);
+        await adminDeleteBooking(b._id);
         await refreshSlots();
       } catch (e) {
         setSlotMsg(e?.message || "Помилка");
@@ -329,13 +329,14 @@ function hhmm(dateStrOrObj) {
     }
 
     try {
-      await adminCreateBlock(token, {
+      // Передаємо чистий об'єкт payload
+      await adminCreateBlock({
         date: slotDate,
         time: timeStr,
         duration: 60,
         reason: "Blocked by admin",
       });
-      await refreshSlots();
+        await refreshSlots();
     } catch (e) {
       setSlotMsg(e?.message || "Помилка");
     }
@@ -343,10 +344,8 @@ function hhmm(dateStrOrObj) {
 
   async function setReviewStatus(id, newStatus) {
     try {
-    
-      await adminSetReviewStatus(token, id, newStatus);
-
-      const data = await adminListReviews(token, revStatusTab);
+      await adminSetReviewStatus(id, newStatus);
+      const data = await adminListReviews(revStatusTab);
       setRevItems(Array.isArray(data?.items) ? data.items : []);
     } catch (e) {
       setRevMsg(e.message);
@@ -356,10 +355,8 @@ function hhmm(dateStrOrObj) {
   async function removeReview(id) {
     if (!window.confirm("Видалити відгук?")) return;
     try {
-     
-      await adminDeleteReview(token, id);
- 
-      const data = await adminListReviews(token, revStatusTab);
+      await adminDeleteReview(id);
+      const data = await adminListReviews(revStatusTab);
       setRevItems(Array.isArray(data?.items) ? data.items : []);
     } catch (e) {
       setRevMsg(e.message);
@@ -375,7 +372,7 @@ function hhmm(dateStrOrObj) {
             <h1>Alina Photographer</h1>
           </Link>
 
-          {token ? (
+          {isAuthenticated ? (
             <button
               className="btn"
               type="button"
@@ -396,27 +393,26 @@ function hhmm(dateStrOrObj) {
             {status ? <div className="muted admin-status">{status}</div> : null}
           </div>
 
-          {!token ? (
-  <div className="card panel-card panel-card-top">
-    <div className="stack">
-      <strong>Вхід адміністратора</strong>
-      <input
-        className="input"
-        type="password"
-        placeholder="Admin password"
-        value={password}
-        onChange={(e) => setPassword(e.target.value)}
-      />
-      <button className="btn wide" type="button" onClick={doLogin}>
-        Увійти
-      </button>
-      <div className="muted admin-login-hint"></div>
-    </div>
-  </div>
-) : null}
+          {!isAuthenticated ? (
+            <div className="card panel-card panel-card-top">
+              <div className="stack">
+                <strong>Вхід адміністратора</strong>
+                <input
+                  className="input"
+                  type="password"
+                  placeholder="Admin password"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                />
+                <button className="btn wide" type="button" onClick={doLogin}>
+                  Увійти
+                </button>
+              </div>
+            </div>
+          ) : null}
         </section>
 
-        {token ? (
+        {isAuthenticated ? (
           <section className="admin-section">
             <div className="panel-grid">
               <div className="card panel-card">
@@ -520,7 +516,7 @@ function hhmm(dateStrOrObj) {
 
                 <hr className="sep admin-sep-md" />
 
-                <h3 className="admin-heading-reset"></h3>
+                <h3 className="admin-heading-reset">Календар бронювань</h3>
 
                 <div className="stack">
                   <div>
@@ -531,10 +527,6 @@ function hhmm(dateStrOrObj) {
                       value={slotDate}
                       onChange={(e) => setSlotDate(e.target.value)}
                     />
-                  </div>
-
-                  <div className="muted admin-meta-text">
-                    
                   </div>
 
                   <div className="card admin-slot-box">
@@ -638,120 +630,122 @@ function hhmm(dateStrOrObj) {
                 ) : null}
 
                 <div className="stack admin-scroll-360">
-                 {(revItems || []).map((r) => (
-  <div key={r._id} className="card admin-review-card">
-    <div
-      style={{
-        display: "grid",
-        gridTemplateColumns: r.photoUrl ? "72px 1fr" : "1fr",
-        gap: "14px",
-        alignItems: "start",
-      }}
-    >
-      {r.photoUrl ? (
-        <img
-          src={r.photoUrl}
-          alt={r.name || "review"}
-          loading="lazy"
-          style={{
-            width: "72px",
-            height: "72px",
-            objectFit: "cover",
-            borderRadius: "50%",
-            border: "1px solid rgba(255,255,255,0.12)",
-          }}
-        />
-      ) : null}
+                  {(revItems || []).map((r) => (
+                    <div key={r._id} className="card admin-review-card">
+                      <div
+                        style={{
+                          display: "grid",
+                          gridTemplateColumns: r.photoUrl ? "72px 1fr" : "1fr",
+                          gap: "14px",
+                          alignItems: "start",
+                        }}
+                      >
+                        {r.photoUrl ? (
+                          <img
+                            src={r.photoUrl}
+                            alt={r.name || "review"}
+                            loading="lazy"
+                            style={{
+                              width: "72px",
+                              height: "72px",
+                              objectFit: "cover",
+                              borderRadius: "50%",
+                              border: "1px solid rgba(255,255,255,0.12)",
+                            }}
+                          />
+                        ) : null}
 
-      <div>
-        <div className="admin-review-head">
-          <div className="admin-review-meta">
-            <div className="admin-review-name">
-              {r.name}{" "}
-              <span className="muted admin-review-rating">
-                ({r.rating}/5)
-              </span>
-            </div>
+                        <div>
+                          <div className="admin-review-head">
+                            <div className="admin-review-meta">
+                              <div className="admin-review-name">
+                                {r.name}{" "}
+                                <span className="muted admin-review-rating">
+                                  ({r.rating}/5)
+                                </span>
+                              </div>
 
-            {r.shootType ? (
-              <div className="muted admin-review-subtext">
-                Тип зйомки: {r.shootType}
-              </div>
-            ) : null}
+                              {r.shootType ? (
+                                <div className="muted admin-review-subtext">
+                                  Тип зйомки: {r.shootType}
+                                </div>
+                              ) : null}
 
-            {r.contact ? (
-              <div className="muted admin-review-subtext">{r.contact}</div>
-            ) : null}
+                              {r.contact ? (
+                                <div className="muted admin-review-subtext">
+                                  {r.contact}
+                                </div>
+                              ) : null}
 
-            {r.createdAt ? (
-              <div className="muted admin-review-subtext">
-                {new Date(r.createdAt).toLocaleString()}
-              </div>
-            ) : null}
-          </div>
+                              {r.createdAt ? (
+                                <div className="muted admin-review-subtext">
+                                  {new Date(r.createdAt).toLocaleString()}
+                                </div>
+                              ) : null}
+                            </div>
 
-          <button
-            type="button"
-            className="icon-btn"
-            onClick={() => removeReview(r._id)}
-            title="Видалити"
-          >
-            🗑️
-          </button>
-        </div>
+                            <button
+                              type="button"
+                              className="icon-btn"
+                              onClick={() => removeReview(r._id)}
+                              title="Видалити"
+                            >
+                              🗑️
+                            </button>
+                          </div>
 
-        <div className="muted admin-review-text">{r.text}</div>
+                          <div className="muted admin-review-text">{r.text}</div>
 
-        {Array.isArray(r.features) && r.features.length ? (
-          <div
-            style={{
-              display: "flex",
-              flexWrap: "wrap",
-              gap: "8px",
-              marginTop: "12px",
-            }}
-          >
-            {r.features.map((f, i) => (
-              <span
-                key={`${r._id}-${f}-${i}`}
-                style={{
-                  padding: "6px 12px",
-                  borderRadius: "999px",
-                  border: "1px solid rgba(255,255,255,0.12)",
-                  background: "rgba(255,255,255,0.04)",
-                  fontSize: "14px",
-                }}
-              >
-                ✓ {f}
-              </span>
-            ))}
-          </div>
-        ) : null}
+                          {Array.isArray(r.features) && r.features.length ? (
+                            <div
+                              style={{
+                                display: "flex",
+                                flexWrap: "wrap",
+                                gap: "8px",
+                                marginTop: "12px",
+                              }}
+                            >
+                              {r.features.map((f, i) => (
+                                <span
+                                  key={`${r._id}-${f}-${i}`}
+                                  style={{
+                                    padding: "6px 12px",
+                                    borderRadius: "999px",
+                                    border: "1px solid rgba(255,255,255,0.12)",
+                                    background: "rgba(255,255,255,0.04)",
+                                    fontSize: "14px",
+                                  }}
+                                >
+                                  ✓ {f}
+                                </span>
+                              ))}
+                            </div>
+                          ) : null}
 
-        {r.status === "pending" ? (
-  <div className="admin-review-actions">
-    <button
-      className="btn"
-      type="button"
-      disabled={revBusy}
-      onClick={() => setReviewStatus(r._id, "approved")}
-    >
-      Підтвердити
-    </button>
-    <button
-      className="btn"
-      type="button"
-      disabled={revBusy}
-      onClick={() => setReviewStatus(r._id, "rejected")}
-    >
-      Відхилити
-    </button>
-  </div>
-) : null}
-      </div>
-    </div>
-  </div>
-))}
+                          {r.status === "pending" ? (
+                            <div className="admin-review-actions">
+                              <button
+                                className="btn"
+                                type="button"
+                                disabled={revBusy}
+                                onClick={() => setReviewStatus(r._id, "approved")}
+                              >
+                                Підтвердити
+                              </button>
+                              <button
+                                className="btn"
+                                type="button"
+                                disabled={revBusy}
+                                onClick={() => setReviewStatus(r._id, "rejected")}
+                              >
+                                Відхилити
+                              </button>
+                            </div>
+                          ) : null}
+                        </div>
+                      </div>
+                    </div>
+                  ))}
                   {!revBusy && !revItems.length ? (
                     <div className="muted">Поки що порожньо.</div>
                   ) : null}
@@ -798,13 +792,10 @@ function hhmm(dateStrOrObj) {
                     <div className="thumb-grid">
                       {(active?.photos || []).map((p) => {
                         const liked = (active?.selectedPhotoIds || []).includes(
-                          p._id,
+                          p._id
                         );
                         return (
-                          <div
-                            key={p._id}
-                            className="thumb admin-thumb"
-                          >
+                          <div key={p._id} className="thumb admin-thumb">
                             {liked ? (
                               <div
                                 title="Лайк клієнта"
@@ -938,8 +929,6 @@ function hhmm(dateStrOrObj) {
                         </div>
                       )}
                     </div>
-
-                    <div className="muted admin-bottom-note"></div>
                   </>
                 )}
               </div>
