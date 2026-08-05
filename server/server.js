@@ -20,7 +20,8 @@ const allowedOrigins = [
   "https://ashchphh.vercel.app"
 ];
 
-const corsOptions = {
+// Чітке налаштування CORS middleware без застарілого app.options("*")
+const corsMiddleware = cors({
   origin: function (origin, callback) {
     if (!origin) return callback(null, true);
     if (
@@ -39,10 +40,10 @@ const corsOptions = {
     "X-Requested-With",
     "Accept"
   ],
-};
+});
 
-app.use(cors(corsOptions));
-app.options("*", cors(corsOptions));
+// Підключаємо CORS для всіх маршрутів і типів запитів (включаючи OPTIONS)
+app.use(corsMiddleware);
 
 app.use(cookieParser());
 app.use(express.json({ limit: "10mb" }));
