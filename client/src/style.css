@@ -3012,3 +3012,88 @@ input[type="date"]::-webkit-calendar-picker-indicator {
 input[type="date"]::-webkit-datetime-edit {
   padding: 0 4px;
 }
+
+
+/* =========================================================
+   ПОКРАЩЕНА МОБІЛЬНА АДАПТАЦІЯ (КНОПКИ, МЕНЮ ТА ТЕГИ)
+   ========================================================= */
+
+@media (max-width: 720px) {
+
+  /* 1. Верхнє меню: плавний горизонтальний скролл без обрізання */
+  header nav {
+    display: flex !important;
+    gap: 8px !important;
+    overflow-x: auto !important;
+    white-space: nowrap !important;
+    -webkit-overflow-scrolling: touch;
+    padding-bottom: 6px !important;
+    scroll-behavior: smooth;
+  }
+
+  /* Приховуємо потворний системний смугу скролу */
+  header nav::-webkit-scrollbar {
+    display: none;
+  }
+
+  header nav a {
+    flex: 0 0 auto !important; /* Не даємо кнопкам стискатися */
+    padding: 6px 12px !important;
+    font-size: 13px !important;
+  }
+
+  /* 2. Кнопки відгуків та заклику до дії (В один рядок 50/50) */
+  .reviews-actions,
+  .cta-row {
+    display: grid !important;
+    grid-template-columns: 1fr 1fr !important; /* Розміщуємо кнопки поруч */
+    gap: 8px !important;
+    width: 100% !important;
+    margin: 12px 0 !important;
+  }
+
+  .reviews-actions .btn,
+  .cta-row .btn {
+    width: 100% !important;
+    min-width: 0 !important;
+    padding: 10px 8px !important;
+    font-size: 13px !important;
+    text-align: center !important;
+    justify-content: center !important;
+    white-space: nowrap !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+  }
+
+  /* 3. Оптимізація чипсів / тегів у картках відгуків */
+  .chips {
+    display: flex !important;
+    flex-wrap: wrap !important;
+    gap: 6px !important;
+    margin-top: 8px !important;
+  }
+
+  .chip {
+    margin: 0 !important; /* Прибираємо стандартний margin */
+    padding: 4px 8px !important;
+    font-size: 11px !important;
+    line-height: 1.2 !important;
+  }
+
+  /* 4. Фіксована плаваюча кнопка "Питання?" у кутку */
+  .floating-chat-btn, 
+  [class*="chat-btn"] {
+    font-size: 13px !important;
+    padding: 8px 12px !important;
+    border-radius: 999px !important;
+  }
+}
+
+@media (max-width: 380px) {
+  /* Для зовсім маленьких екранів трохи зменшуємо шрифт у кнопках */
+  .reviews-actions .btn,
+  .cta-row .btn {
+    font-size: 12px !important;
+    padding: 9px 4px !important;
+  }
+}
