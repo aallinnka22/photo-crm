@@ -69,7 +69,7 @@ export default function ClientPage() {
   const [code, setCode] = useState("");
   const [status, setStatus] = useState("");
   const [token, setToken] = useState(
-    () => localStorage.getItem("clientToken") || "",
+    () => localStorage.getItem("client_token") || "",
   );
 
   const [gallery, setGallery] = useState(null);
@@ -105,15 +105,6 @@ export default function ClientPage() {
     return getTimeLeft(expiresAt);
   }, [expiresAt, tick]);
 
-  const expiresLabel = useMemo(() => {
-    if (!expiresAt) return "";
-    return expiresAt.toLocaleDateString("uk-UA", {
-      year: "numeric",
-      month: "2-digit",
-      day: "2-digit",
-    });
-  }, [expiresAt, tick]);
-
   useEffect(() => {
     const t = localStorage.getItem("theme") || "dark";
     document.documentElement.classList.toggle("light", t === "light");
@@ -125,7 +116,7 @@ export default function ClientPage() {
     (async () => {
       try {
         setStatus("Завантаження галереї…");
-        const data = await getMyGallery(token);
+        const data = await getMyGallery();
         setGallery(data);
 
         const prev = Array.isArray(data?.selectedPhotoIds)
@@ -141,7 +132,7 @@ export default function ClientPage() {
       } catch (e) {
         console.error(e);
         setStatus("Помилка доступу. Спробуйте увійти ще раз.");
-        localStorage.removeItem("clientToken");
+        localStorage.removeItem("client_token");
         setToken("");
       }
     })();
@@ -152,11 +143,17 @@ export default function ClientPage() {
     if (!trimmed) return setStatus("Введіть код доступу.");
 
     try {
-      
-      const { token: tkn } = await clientLogin(trimmed);
-      localStorage.setItem("clientToken", tkn);
-      setToken(tkn);
-      setStatus("");
+      setStatus("Вхід...");
+      const res = await clientLogin(trimmed);
+      const tkn = res?.token || localStorage.getItem("client_token");
+
+      if (tkn) {
+        localStorage.setItem("client_token", tkn);
+        setToken(tkn);
+        setStatus("");
+      } else {
+        setStatus("Помилка отримання токена.");
+      }
     } catch (e) {
       console.error(e);
       setStatus("Невірний код або код прострочений.");
@@ -164,7 +161,7 @@ export default function ClientPage() {
   }
 
   function logout() {
-    localStorage.removeItem("clientToken");
+    localStorage.removeItem("client_token");
     setToken("");
     setGallery(null);
     setSelected(new Set());
@@ -179,7 +176,6 @@ export default function ClientPage() {
     if (!id) return;
 
     if ((photo?.status || "preview") === "final") {
-    
       return;
     }
 
@@ -209,14 +205,14 @@ export default function ClientPage() {
 
     try {
       setSaving(true);
-      setStatus("Збережено!");
+      setStatus("Збереження...");
 
-      await saveMySelection(token, {
+      await saveMySelection({
         selectedPhotoIds: photoIds,
         comment,
       });
 
-     
+      setStatus("Збережено!");
       setTimeout(() => setStatus(""), 1500);
     } catch (e) {
       console.error(e);
@@ -237,7 +233,6 @@ export default function ClientPage() {
 
     try {
       setDownloadingId(photo?._id || photo?.id || "");
-  
 
       const res = await fetch(url, { mode: "cors" });
       if (!res.ok) throw new Error(`Download failed (${res.status})`);
@@ -264,17 +259,13 @@ export default function ClientPage() {
   }
 
   async function downloadAllFinal() {
-    if (!finalPhotos.length) {
-    
-      return;
-    }
+    if (!finalPhotos.length) return;
 
     for (const p of finalPhotos) {
       await downloadFinal(p);
       await new Promise((r) => setTimeout(r, 250));
     }
 
-  
     setTimeout(() => setStatus(""), 1500);
   }
 
@@ -412,8 +403,6 @@ export default function ClientPage() {
                         ⏳ До видалення: {timeLeft.days} дн. {timeLeft.hours} год.
                       </span>
                     ) : null}
-
-                   
                   </div>
                 </div>
 
@@ -448,7 +437,7 @@ export default function ClientPage() {
                   onClick={save}
                   disabled={saving}
                 >
-                  { "Зберегти вибір"}
+                  {"Зберегти вибір"}
                 </button>
               </div>
 
