@@ -105,6 +105,15 @@ export default function ClientPage() {
     return getTimeLeft(expiresAt);
   }, [expiresAt, tick]);
 
+  const expiresLabel = useMemo(() => {
+    if (!expiresAt) return "";
+    return expiresAt.toLocaleDateString("uk-UA", {
+      year: "numeric",
+      month: "2-digit",
+      day: "2-digit",
+    });
+  }, [expiresAt, tick]);
+
   useEffect(() => {
     const t = localStorage.getItem("theme") || "dark";
     document.documentElement.classList.toggle("light", t === "light");
@@ -116,7 +125,7 @@ export default function ClientPage() {
     (async () => {
       try {
         setStatus("Завантаження галереї…");
-        const data = await getMyGallery();
+        const data = await getMyGallery(token);
         setGallery(data);
 
         const prev = Array.isArray(data?.selectedPhotoIds)
@@ -145,13 +154,21 @@ export default function ClientPage() {
     try {
       setStatus("Вхід...");
       const res = await clientLogin(trimmed);
-      const tkn = res?.token || localStorage.getItem("client_token");
+
+      // Гнучкий витяг токена
+      const tkn =
+        res?.token ||
+        res?.accessToken ||
+        res?.data?.token ||
+        (typeof res === "string" ? res : null) ||
+        localStorage.getItem("client_token");
 
       if (tkn) {
         localStorage.setItem("client_token", tkn);
         setToken(tkn);
         setStatus("");
       } else {
+        console.warn("Сервер не повернув токен:", res);
         setStatus("Помилка отримання токена.");
       }
     } catch (e) {
@@ -207,7 +224,7 @@ export default function ClientPage() {
       setSaving(true);
       setStatus("Збереження...");
 
-      await saveMySelection({
+      await saveMySelection(token, {
         selectedPhotoIds: photoIds,
         comment,
       });
