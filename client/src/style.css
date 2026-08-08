@@ -3136,3 +3136,104 @@ html:not(.light) .leave-review-card {
   border-color: rgba(255, 255, 255, 0.1) !important;
 }
 
+/* =========================================================
+   МОБІЛЬНЕ ПОРТФОЛІО (ЦЕНТРОВАНЕ ФОТО + СКРОЛЛБАР)
+   ========================================================= */
+
+.scroll-hint {
+  display: none;
+}
+
+@media (max-width: 720px) {
+  /* 1. Скидаємо відступи контейнера секції */
+  #portfolio .container,
+  .portfolio-section .container {
+    padding-left: 0 !important;
+    padding-right: 0 !important;
+    overflow: hidden;
+  }
+
+  /* 2. Акуратна підказка ЗВЕРХУ справа */
+  .scroll-hint {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 6px;
+    font-size: 13px;
+    color: var(--muted, #b2b7c3);
+    padding: 0 16px;
+    margin-bottom: 10px;
+    font-weight: 500;
+  }
+
+  .scroll-arrow {
+    display: inline-block;
+    animation: swipeRight 1.5s infinite ease-in-out;
+  }
+
+  /* 3. Горизонтальний скрол з бічними відступами для центрування */
+  .folio {
+    display: flex !important;
+    overflow-x: auto !important;
+    scroll-snap-type: x mandatory;
+    gap: 12px !important;
+    
+    /* Формула центрування: (100% - 80% картки) / 2 = 10% мінус пів-гапу */
+    padding: 0 calc(10% - 6px) 14px calc(10% - 6px) !important;
+    
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: thin;
+    scrollbar-color: var(--ring, rgba(143, 176, 255, 0.55)) rgba(255, 255, 255, 0.08);
+  }
+
+  /* 4. Тонка видима смуга скролу */
+  .folio::-webkit-scrollbar {
+    display: block !important;
+    height: 4px !important;
+  }
+
+  .folio::-webkit-scrollbar-track {
+    background: rgba(255, 255, 255, 0.08);
+    border-radius: 999px;
+    margin: 0 16px;
+  }
+
+  .folio::-webkit-scrollbar-thumb {
+    background: var(--ring, rgba(143, 176, 255, 0.55));
+    border-radius: 999px;
+  }
+
+  /* 5. Картка: 80% ширини + прив'язка СТРОГО ПО ЦЕНТРУ */
+  .folio .ph {
+    flex: 0 0 80% !important;
+    min-width: 0 !important;
+    scroll-snap-align: center !important; /* Магнітить кадри по центру */
+    aspect-ratio: 3 / 4;
+    border-radius: 18px !important;
+    overflow: hidden;
+  }
+
+  .folio .ph img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+}
+
+/* Анімація стрілочки */
+@keyframes swipeRight {
+  0%, 100% {
+    transform: translateX(0);
+  }
+  50% {
+    transform: translateX(5px);
+  }
+}
+
+/* Світла тема */
+html.light .folio::-webkit-scrollbar-track {
+  background: rgba(0, 0, 0, 0.08);
+}
+html.light .folio::-webkit-scrollbar-thumb {
+  background: rgba(60, 110, 255, 0.45);
+}
