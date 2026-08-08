@@ -3235,7 +3235,7 @@ html.light .slot *,
 html.light .slot-btn *,
 html.light .time-slot *,
 html.light [class*="slot"] * {
-  color: #0d0e12 !important;
+  color: #ffffff !important;
 }
 
 /* 3. Наведення курсора (Hover) */
