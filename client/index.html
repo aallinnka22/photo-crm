@@ -3,6 +3,8 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+   
+<meta name="color-scheme" content="dark light">
     <title>Alina Photographer</title>
 
     <link rel="preconnect" href="https://fonts.googleapis.com" />
@@ -26,6 +28,7 @@
       document.documentElement.classList.toggle("light", isLight);
       document.documentElement.classList.toggle("dark", !isLight);
       document.documentElement.style.colorScheme = isLight ? "light" : "dark";
+      
     } catch (e) {}
   })();
 </script>

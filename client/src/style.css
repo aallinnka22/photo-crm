@@ -3099,23 +3099,21 @@ input[type="date"]::-webkit-datetime-edit {
 }
 
 
-/* Портфоліо у 2 колонки для мобільних екранів */
 @media (max-width: 720px) {
   .folio {
     display: grid !important;
-    grid-template-columns: repeat(2, 1fr) !important; /* 2 колонки рівної ширини */
-    gap: 8px !important; /* Компактний відступ між фото */
+    grid-template-columns: repeat(2, 1fr) !important;
+    gap: 6px !important; /* Мінімальний зазор між фото */
+  }
+
+  /* Перше фото займає обидві колонки (на всю ширину) */
+  .folio .ph:first-child {
+    grid-column: span 2 !important;
+    aspect-ratio: 4 / 3 !important; /* Зробимо його широким та великим */
   }
 
   .folio .ph {
-    aspect-ratio: 3 / 4; /* Зберігаємо гарні пропорції вертикальних фото */
-    border-radius: 14px !important; /* Охайне заокруглення кутів */
-  }
-}
-
-/* Перекриваємо правило 420px, щоб сітка НЕ згорталася в 1 колонку */
-@media (max-width: 420px) {
-  .folio {
-    grid-template-columns: repeat(2, 1fr) !important;
+    aspect-ratio: 3 / 4;
+    border-radius: 12px !important;
   }
 }
