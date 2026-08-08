@@ -3101,19 +3101,132 @@ input[type="date"]::-webkit-datetime-edit {
 
 @media (max-width: 720px) {
   .folio {
-    display: grid !important;
-    grid-template-columns: repeat(2, 1fr) !important;
-    gap: 6px !important; /* Мінімальний зазор між фото */
+    display: flex !important;
+    overflow-x: auto !important;
+    scroll-snap-type: x mandatory;
+    gap: 10px !important;
+    padding-bottom: 10px !important;
+    -webkit-overflow-scrolling: touch;
   }
 
-  /* Перше фото займає обидві колонки (на всю ширину) */
-  .folio .ph:first-child {
-    grid-column: span 2 !important;
-    aspect-ratio: 4 / 3 !important; /* Зробимо його широким та великим */
+  .folio::-webkit-scrollbar {
+    display: none; /* Приховуємо скроллбар */
   }
 
   .folio .ph {
+    flex: 0 0 82% !important; /* Кожне фото займає 82% ширини екрана */
+    scroll-snap-align: center;
     aspect-ratio: 3 / 4;
-    border-radius: 12px !important;
+    border-radius: 16px !important;
+  }
+}
+
+/* Переконаємося, що коли немає класу .light, строго діє темна тема */
+html:not(.light) body {
+  background: #0a0a0d !important;
+  color: #f2f3f5 !important;
+}
+
+html:not(.light) .card,
+html:not(.light) .panel-card,
+html:not(.light) .review-card,
+html:not(.light) .leave-review-card {
+  background: rgba(0, 0, 0, 0.28) !important;
+  color: #f2f3f5 !important;
+  border-color: rgba(255, 255, 255, 0.1) !important;
+}
+
+/* =========================================================
+   ПОВНЕ ВИПРАВЛЕННЯ СВІТЛОЇ ТЕМИ ТА КОНТРАСТУ ТЕКСТУ
+   ========================================================= */
+
+/* 1. Картки відгуків та блоки у світлій темі */
+.light .review-card,
+.light .leave-review-card,
+.light .client-login-card,
+.light .panel-card,
+.light .slots.card {
+  background: #ffffff !important;
+  border-color: rgba(0, 0, 0, 0.12) !important;
+  color: var(--fg) !important;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.06) !important;
+}
+
+/* 2. Текст та заголовки всередині карток у світлій темі */
+.light .review-card *,
+.light .leave-review-card *,
+.light .panel-card * {
+  color: var(--fg);
+}
+
+.light .muted,
+.light .review-meta,
+.light .leave-review-note {
+  color: var(--muted) !important;
+}
+
+/* 3. Шапка та мобільна навігація у світлій темі */
+.light header {
+  background: rgba(255, 255, 255, 0.85) !important;
+}
+
+.light header nav a {
+  background: rgba(0, 0, 0, 0.05) !important;
+  border-color: rgba(0, 0, 0, 0.12) !important;
+  color: var(--fg) !important;
+}
+
+.light header nav a:hover {
+  background: rgba(0, 0, 0, 0.1) !important;
+}
+
+/* 4. Чипси/теги та зірочки у світлій темі */
+.light .chip,
+.light .leave-review-chip,
+.light .leave-review-star {
+  background: #f2f4f7 !important;
+  border-color: rgba(0, 0, 0, 0.14) !important;
+  color: var(--fg) !important;
+}
+
+.light .leave-review-chip.is-active,
+.light .leave-review-star.is-active {
+  border-color: var(--ring) !important;
+  background: rgba(60, 110, 255, 0.1) !important;
+}
+
+/* 5. Поля вводу (input, textarea, select) у світлій темі */
+.light .input,
+.light textarea,
+.light select {
+  background: #f8f9fd !important;
+  color: #0b0c10 !important;
+  border-color: rgba(0, 0, 0, 0.14) !important;
+}
+
+.light .input::placeholder,
+.light textarea::placeholder {
+  color: #6b7280 !important;
+}
+
+/* 6. Аватарки відгуків у світлій темі */
+.light .review-avatar {
+  background: #eef1f6 !important;
+  border-color: rgba(0, 0, 0, 0.12) !important;
+  color: var(--fg) !important;
+}
+
+/* 7. Фікс для мобільних кнопок (прибираємо хардкод білого кольору для темної теми) */
+@media (max-width: 720px) {
+  .reviews-actions .btn.secondary {
+    background: rgba(255, 255, 255, 0.06);
+    color: var(--fg);
+    border: 1px solid var(--border);
+  }
+
+  .light .reviews-actions .btn.secondary {
+    background: #f2f4f7 !important;
+    color: #0b0c10 !important;
+    border-color: rgba(0, 0, 0, 0.14) !important;
   }
 }
