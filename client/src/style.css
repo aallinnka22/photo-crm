@@ -3208,252 +3208,77 @@ html.light [class*="chat-btn"] {
 }
 
 /* =========================================================
-   МОБІЛЬНЕ ПОРТФОЛІО (ЦЕНТРОВАНЕ ФОТО + СКРОЛЛБАР)
+   ТОЧНИЙ ФІКС ЧАСОВИХ СЛОТІВ У СВІТЛІЙ ТЕМІ (html.light)
    ========================================================= */
 
-.scroll-hint {
-  display: none;
-}
-
-@media (max-width: 720px) {
-  /* 1. Скидаємо відступи контейнера секції */
-  #portfolio .container,
-  .portfolio-section .container {
-    padding-left: 0 !important;
-    padding-right: 0 !important;
-    overflow: hidden;
-  }
-
-  /* 2. Акуратна підказка ЗВЕРХУ справа */
-  .scroll-hint {
-    display: flex;
-    align-items: center;
-    justify-content: flex-end;
-    gap: 6px;
-    font-size: 13px;
-    color: var(--muted, #b2b7c3);
-    padding: 0 16px;
-    margin-bottom: 10px;
-    font-weight: 500;
-  }
-
-  .scroll-arrow {
-    display: inline-block;
-    animation: swipeRight 1.5s infinite ease-in-out;
-  }
-
-  /* 3. Горизонтальний скрол з бічними відступами для центрування */
-  .folio {
-    display: flex !important;
-    overflow-x: auto !important;
-    scroll-snap-type: x mandatory;
-    gap: 12px !important;
-    
-    /* Формула центрування: (100% - 80% картки) / 2 = 10% мінус пів-гапу */
-    padding: 0 calc(10% - 6px) 14px calc(10% - 6px) !important;
-    
-    -webkit-overflow-scrolling: touch;
-    scrollbar-width: thin;
-    scrollbar-color: var(--ring, rgba(143, 176, 255, 0.55)) rgba(255, 255, 255, 0.08);
-  }
-
-  /* 4. Тонка видима смуга скролу */
-  .folio::-webkit-scrollbar {
-    display: block !important;
-    height: 4px !important;
-  }
-
-  .folio::-webkit-scrollbar-track {
-    background: rgba(255, 255, 255, 0.08);
-    border-radius: 999px;
-    margin: 0 16px;
-  }
-
-  .folio::-webkit-scrollbar-thumb {
-    background: var(--ring, rgba(143, 176, 255, 0.55));
-    border-radius: 999px;
-  }
-
-  /* 5. Картка: 80% ширини + прив'язка СТРОГО ПО ЦЕНТРУ */
-  .folio .ph {
-    flex: 0 0 80% !important;
-    min-width: 0 !important;
-    scroll-snap-align: center !important; /* Магнітить кадри по центру */
-    aspect-ratio: 3 / 4;
-    border-radius: 18px !important;
-    overflow: hidden;
-  }
-
-  .folio .ph img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-  }
-}
-
-/* Анімація стрілочки */
-@keyframes swipeRight {
-  0%, 100% {
-    transform: translateX(0);
-  }
-  50% {
-    transform: translateX(5px);
-  }
-}
-
-/* Світла тема */
-html.light .folio::-webkit-scrollbar-track {
-  background: rgba(0, 0, 0, 0.08);
-}
-html.light .folio::-webkit-scrollbar-thumb {
-  background: rgba(60, 110, 255, 0.45);
-}
-
-/* =========================================================
-   ФІКС БЛОКУ ЗАПИСУ ТА СЛОТІВ ЧАСУ У СВІТЛІЙ ТЕМІ
-   ========================================================= */
-
-/* 1. Блок слотів та календар у світлій темі */
+/* 1. Сам контейнер / картка зі слотами */
 html.light .slots,
-html.light .slots.card,
-html.light .booking-card,
-html.light .date-picker {
-  background: #ffffff !important;
-  border-color: rgba(0, 0, 0, 0.12) !important;
-  color: #0d0e12 !important;
+html.light .slots-grid,
+html.light .time-slots,
+html.light .booking-slots {
+  background: transparent !important;
 }
 
-/* 2. Картки / кнопки самих слотів часу */
+/* 2. Звичайний (вільний) слот часу — темний текст на світлому фоні */
 html.light .slot,
+html.light .slot-btn,
 html.light .time-slot,
-html.light .slot-btn {
+html.light [class*="slot"] {
   background: #f0f2f6 !important;
   color: #0d0e12 !important;
-  border: 1px solid rgba(0, 0, 0, 0.15) !important;
+  border: 1px solid rgba(0, 0, 0, 0.16) !important;
+  font-weight: 600 !important;
 }
 
-/* Текст часу (годин) та статусу всередині слота */
+/* Примусово робимо весь текст та цифри всередині слота темними */
 html.light .slot *,
+html.light .slot-btn *,
 html.light .time-slot *,
-html.light .slot-time {
+html.light [class*="slot"] * {
   color: #0d0e12 !important;
 }
 
-/* 3. Наведення (hover) на слот часу */
+/* 3. Наведення курсора (Hover) */
 html.light .slot:hover:not(:disabled),
+html.light .slot-btn:hover:not(:disabled),
 html.light .time-slot:hover:not(:disabled) {
   background: #e2e6f0 !important;
   border-color: rgba(0, 0, 0, 0.3) !important;
 }
 
-/* 4. Обраний (активний) слот часу */
+/* 4. ОБРАНИЙ (АКТИВНИЙ) слот — темна кнопка з БІЛИМ текстом */
 html.light .slot.active,
 html.light .slot.selected,
+html.light .slot-btn.active,
+html.light .slot-btn.selected,
 html.light .time-slot.active,
-html.light .time-slot.selected {
+html.light .time-slot.selected,
+html.light [class*="slot"][class*="active"],
+html.light [class*="slot"][class*="selected"] {
   background: #1a1d24 !important;
   border-color: #1a1d24 !important;
-  color: #ffffff !important;
 }
 
 html.light .slot.active *,
 html.light .slot.selected *,
+html.light .slot-btn.active *,
+html.light .slot-btn.selected *,
 html.light .time-slot.active *,
 html.light .time-slot.selected * {
-  color: #ffffff !important; /* На обраному слоті час стає білим */
+  color: #ffffff !important; /* Білий час на темній обраній кнопці */
 }
 
-/* 5. Зайняті або недоступні слоти (disabled) */
+/* 5. Зайнятий / недоступний слот */
 html.light .slot:disabled,
-html.light .time-slot:disabled,
-html.light .slot.disabled {
-  background: #f5f5f7 !important;
-  color: #a0a5b1 !important;
+html.light .slot.disabled,
+html.light .time-slot:disabled {
+  background: #f4f5f8 !important;
   border-color: rgba(0, 0, 0, 0.06) !important;
-  opacity: 0.6;
+  opacity: 0.5 !important;
 }
 
 html.light .slot:disabled *,
+html.light .slot.disabled *,
 html.light .time-slot:disabled * {
-  color: #a0a5b1 !important;
-}
-
-/* =========================================================
-   ФІКС СКРОЛУ ТА КАРТОК ВІДГУКІВ
-   ========================================================= */
-
-/* 1. Налаштування скролу відгуків для ТЕМНОЇ теми */
-.reviews,
-.reviews-list,
-.reviews-grid,
-.reviews-track {
-  overflow-x: auto !important;
-  -webkit-overflow-scrolling: touch;
-  scrollbar-width: thin !important;
-  scrollbar-color: rgba(255, 255, 255, 0.3) rgba(255, 255, 255, 0.08) !important;
-}
-
-/* Смуга скролу для Webkit (Chrome/Safari/iOS) у темній темі */
-.reviews::-webkit-scrollbar,
-.reviews-list::-webkit-scrollbar,
-.reviews-grid::-webkit-scrollbar,
-.reviews-track::-webkit-scrollbar {
-  display: block !important;
-  height: 5px !important;
-}
-
-.reviews::-webkit-scrollbar-track,
-.reviews-list::-webkit-scrollbar-track,
-.reviews-grid::-webkit-scrollbar-track,
-.reviews-track::-webkit-scrollbar-track {
-  background: rgba(255, 255, 255, 0.08) !important;
-  border-radius: 999px !important;
-}
-
-.reviews::-webkit-scrollbar-thumb,
-.reviews-list::-webkit-scrollbar-thumb,
-.reviews-grid::-webkit-scrollbar-thumb,
-.reviews-track::-webkit-scrollbar-thumb {
-  background: rgba(255, 255, 255, 0.3) !important;
-  border-radius: 999px !important;
-}
-
-/* 2. Адаптація скролу відгуків для СВІТЛОЇ теми (html.light) */
-html.light .reviews,
-html.light .reviews-list,
-html.light .reviews-grid,
-html.light .reviews-track {
-  scrollbar-color: rgba(0, 0, 0, 0.3) rgba(0, 0, 0, 0.08) !important;
-}
-
-html.light .reviews::-webkit-scrollbar-track,
-html.light .reviews-list::-webkit-scrollbar-track,
-html.light .reviews-grid::-webkit-scrollbar-track,
-html.light .reviews-track::-webkit-scrollbar-track {
-  background: rgba(0, 0, 0, 0.08) !important;
-}
-
-html.light .reviews::-webkit-scrollbar-thumb,
-html.light .reviews-list::-webkit-scrollbar-thumb,
-html.light .reviews-grid::-webkit-scrollbar-thumb,
-html.light .reviews-track::-webkit-scrollbar-thumb {
-  background: rgba(0, 0, 0, 0.28) !important;
-}
-
-/* 3. Додатково: фікс видимості тексту та фону карток відгуків у світлій темі */
-html.light .review-card {
-  background: #ffffff !important;
-  border: 1px solid rgba(0, 0, 0, 0.12) !important;
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.06) !important;
-}
-
-html.light .review-card *,
-html.light .review-author,
-html.light .review-text {
-  color: #0d0e12 !important;
-}
-
-html.light .review-date,
-html.light .review-meta {
-  color: #626875 !important;
+  color: #9aa0a6 !important;
 }
