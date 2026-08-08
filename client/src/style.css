@@ -3137,98 +3137,74 @@ html:not(.light) .leave-review-card {
 }
 
 /* =========================================================
-   ПОВНЕ ВИПРАВЛЕННЯ СВІТЛОЇ ТЕМИ ТА КОНТРАСТУ ТЕКСТУ
+   ПОВНЕ ВИПРАВЛЕННЯ ТЕКСТУ ТА КОНТРАСТУ У СВІТЛІЙ ТЕМІ
    ========================================================= */
 
-/* 1. Картки відгуків та блоки у світлій темі */
-.light .review-card,
-.light .leave-review-card,
-.light .client-login-card,
-.light .panel-card,
-.light .slots.card {
+/* 1. Загальні тексти, заголовки, списки та абзаци у світлій темі */
+html.light body,
+html.light h1, html.light h2, html.light h3, html.light h4, html.light h5, html.light h6,
+html.light p, html.light span, html.light li, html.light label, html.light strong {
+  color: #0d0e12 !important; /* Чіткий темний колір для всіх написів */
+}
+
+/* 2. Другорядні підписи та приглушений текст (muted) */
+html.light .muted,
+html.light .scroll-hint,
+html.light .subtitle,
+html.light .lead {
+  color: #555c6e !important;
+}
+
+/* 3. Шапка, меню та чіпси/кнопки категорій */
+html.light header {
+  background: rgba(255, 255, 255, 0.9) !important;
+  border-bottom-color: rgba(0, 0, 0, 0.1) !important;
+}
+
+html.light nav a,
+html.light .tabs .chip,
+html.light .chip {
+  background: #f0f2f6 !important;
+  color: #1a1d24 !important;
+  border-color: rgba(0, 0, 0, 0.12) !important;
+}
+
+html.light .tabs .chip.active,
+html.light .chip.active {
+  background: #1a1d24 !important;
+  color: #ffffff !important; /* На активній кнопці текст залишаємо білим */
+}
+
+/* 4. Поля вводу (input, textarea, select) */
+html.light input,
+html.light textarea,
+html.light select,
+html.light .input {
+  background: #f8f9fc !important;
+  color: #0d0e12 !important;
+  border-color: rgba(0, 0, 0, 0.18) !important;
+}
+
+html.light input::placeholder,
+html.light textarea::placeholder {
+  color: #717888 !important;
+}
+
+/* 5. Картки, блоки, відгуки та плаваюча кнопка «Питання?» */
+html.light .card,
+html.light .panel-card,
+html.light .review-card,
+html.light .leave-review-card {
   background: #ffffff !important;
   border-color: rgba(0, 0, 0, 0.12) !important;
-  color: var(--fg) !important;
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.06) !important;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.06) !important;
 }
 
-/* 2. Текст та заголовки всередині карток у світлій темі */
-.light .review-card *,
-.light .leave-review-card *,
-.light .panel-card * {
-  color: var(--fg);
-}
-
-.light .muted,
-.light .review-meta,
-.light .leave-review-note {
-  color: var(--muted) !important;
-}
-
-/* 3. Шапка та мобільна навігація у світлій темі */
-.light header {
-  background: rgba(255, 255, 255, 0.85) !important;
-}
-
-.light header nav a {
-  background: rgba(0, 0, 0, 0.05) !important;
-  border-color: rgba(0, 0, 0, 0.12) !important;
-  color: var(--fg) !important;
-}
-
-.light header nav a:hover {
-  background: rgba(0, 0, 0, 0.1) !important;
-}
-
-/* 4. Чипси/теги та зірочки у світлій темі */
-.light .chip,
-.light .leave-review-chip,
-.light .leave-review-star {
-  background: #f2f4f7 !important;
-  border-color: rgba(0, 0, 0, 0.14) !important;
-  color: var(--fg) !important;
-}
-
-.light .leave-review-chip.is-active,
-.light .leave-review-star.is-active {
-  border-color: var(--ring) !important;
-  background: rgba(60, 110, 255, 0.1) !important;
-}
-
-/* 5. Поля вводу (input, textarea, select) у світлій темі */
-.light .input,
-.light textarea,
-.light select {
-  background: #f8f9fd !important;
-  color: #0b0c10 !important;
-  border-color: rgba(0, 0, 0, 0.14) !important;
-}
-
-.light .input::placeholder,
-.light textarea::placeholder {
-  color: #6b7280 !important;
-}
-
-/* 6. Аватарки відгуків у світлій темі */
-.light .review-avatar {
-  background: #eef1f6 !important;
-  border-color: rgba(0, 0, 0, 0.12) !important;
-  color: var(--fg) !important;
-}
-
-/* 7. Фікс для мобільних кнопок (прибираємо хардкод білого кольору для темної теми) */
-@media (max-width: 720px) {
-  .reviews-actions .btn.secondary {
-    background: rgba(255, 255, 255, 0.06);
-    color: var(--fg);
-    border: 1px solid var(--border);
-  }
-
-  .light .reviews-actions .btn.secondary {
-    background: #f2f4f7 !important;
-    color: #0b0c10 !important;
-    border-color: rgba(0, 0, 0, 0.14) !important;
-  }
+/* Віджет чату/питання */
+html.light .chat-widget-btn,
+html.light [class*="chat-btn"] {
+  background: #1a1d24 !important;
+  color: #ffffff !important;
 }
 
 /* =========================================================
