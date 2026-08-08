@@ -3231,18 +3231,16 @@ html:not(.light) .leave-review-card {
   }
 }
 
-
 /* =========================================================
-   МОБІЛЬНЕ ПОРТФОЛІО (ГОРИЗОНТАЛЬНИЙ СКРОЛ З ПІДКАЗКОЮ)
+   МОБІЛЬНЕ ПОРТФОЛІО (ЦЕНТРОВАНЕ ФОТО + СКРОЛЛБАР)
    ========================================================= */
 
-/* Приховуємо підказку на десктопах */
 .scroll-hint {
   display: none;
 }
 
 @media (max-width: 720px) {
-  /* 1. Вирівнюємо контейнер портфоліо, щоб скрол йшов від краю до краю екрана */
+  /* 1. Скидаємо відступи контейнера секції */
   #portfolio .container,
   .portfolio-section .container {
     padding-left: 0 !important;
@@ -3250,7 +3248,7 @@ html:not(.light) .leave-review-card {
     overflow: hidden;
   }
 
-  /* 2. Текстова підказка (охайно з правим відступом) */
+  /* 2. Акуратна підказка ЗВЕРХУ справа */
   .scroll-hint {
     display: flex;
     align-items: center;
@@ -3259,7 +3257,7 @@ html:not(.light) .leave-review-card {
     font-size: 13px;
     color: var(--muted, #b2b7c3);
     padding: 0 16px;
-    margin-bottom: 12px;
+    margin-bottom: 10px;
     font-weight: 500;
   }
 
@@ -3268,23 +3266,22 @@ html:not(.light) .leave-review-card {
     animation: swipeRight 1.5s infinite ease-in-out;
   }
 
-  /* 3. Горизонтальна стрічка */
+  /* 3. Горизонтальний скрол з бічними відступами для центрування */
   .folio {
     display: flex !important;
     overflow-x: auto !important;
     scroll-snap-type: x mandatory;
     gap: 12px !important;
     
-    /* Відступи з боків: 16px зліва (щоб перше фото не липло до краю), 
-       і 16px справа, щоб останнє фото не упиралося */
-    padding: 0 16px 14px 16px !important; 
+    /* Формула центрування: (100% - 80% картки) / 2 = 10% мінус пів-гапу */
+    padding: 0 calc(10% - 6px) 14px calc(10% - 6px) !important;
     
     -webkit-overflow-scrolling: touch;
-    scrollbar-width: thin; /* Тонка смуга для Firefox */
+    scrollbar-width: thin;
     scrollbar-color: var(--ring, rgba(143, 176, 255, 0.55)) rgba(255, 255, 255, 0.08);
   }
 
-  /* 4. Стилізований акуратний скроллбар (не вилізає і не ламає верстку) */
+  /* 4. Тонка видима смуга скролу */
   .folio::-webkit-scrollbar {
     display: block !important;
     height: 4px !important;
@@ -3293,7 +3290,7 @@ html:not(.light) .leave-review-card {
   .folio::-webkit-scrollbar-track {
     background: rgba(255, 255, 255, 0.08);
     border-radius: 999px;
-    margin: 0 16px; /* Затискаємо трек скролу всередину екрана */
+    margin: 0 16px;
   }
 
   .folio::-webkit-scrollbar-thumb {
@@ -3301,13 +3298,13 @@ html:not(.light) .leave-review-card {
     border-radius: 999px;
   }
 
-  /* 5. Каркас картки фото: 82% ширини дає чіткий шматочок наступного кадру справа */
+  /* 5. Картка: 80% ширини + прив'язка СТРОГО ПО ЦЕНТРУ */
   .folio .ph {
-    flex: 0 0 82% !important;
+    flex: 0 0 80% !important;
     min-width: 0 !important;
-    scroll-snap-align: start;
+    scroll-snap-align: center !important; /* Магнітить кадри по центру */
     aspect-ratio: 3 / 4;
-    border-radius: 16px !important;
+    border-radius: 18px !important;
     overflow: hidden;
   }
 
@@ -3318,7 +3315,7 @@ html:not(.light) .leave-review-card {
   }
 }
 
-/* Анімація для стрілочки */
+/* Анімація стрілочки */
 @keyframes swipeRight {
   0%, 100% {
     transform: translateX(0);
@@ -3328,7 +3325,7 @@ html:not(.light) .leave-review-card {
   }
 }
 
-/* Оптимізація скроллбара для світлої теми */
+/* Світла тема */
 html.light .folio::-webkit-scrollbar-track {
   background: rgba(0, 0, 0, 0.08);
 }
