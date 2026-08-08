@@ -770,10 +770,7 @@ async function submitReview() {
               Події
             </button>
           </div>
-<div className="scroll-hint">
-  <span>Гортайте вбік</span>
-  <span className="scroll-arrow">→</span>
-</div>
+
 
           <div className="folio" id="folio">
             {filteredPhotos.map((p, idx) => (
@@ -783,6 +780,11 @@ async function submitReview() {
             ))}
           </div>
         </section>
+
+<div className="scroll-hint">
+  <span>Гортайте вбік</span>
+  <span className="scroll-arrow">→</span>
+</div>
 
         <section id="services">
           <h3 className="section-title">Послуги та ціни</h3>
