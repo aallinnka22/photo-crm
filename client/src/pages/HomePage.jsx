@@ -219,24 +219,6 @@ export default function HomePage() {
     } catch (_) {}
   }
 
-  const photos = [
-    { cat: "portrait", src: "/images/IMG_3480.jpg", alt: "portrait" },
-    { cat: "family", src: "/images/IMG_2352.jpg", alt: "family" },
-    { cat: "event", src: "/images/IMG_3611.jpg", alt: "event" },
-
-    { cat: "portrait", src: "/images/IMG_5296.jpg", alt: "portrait" },
-    { cat: "family", src: "/images/IMG_6737.jpg", alt: "family" },
-    { cat: "event", src: "/images/IMG_0822.jpg", alt: "event" },
-
-    { cat: "portrait", src: "/images/IMG_7875.jpg", alt: "portrait" },
-    { cat: "family", src: "/images/IMG_7066.jpg", alt: "family" },
-    { cat: "event", src: "/images/IMG_2714.jpg", alt: "event" },
-
-     { cat: "portrait", src: "/images/IMG_6609 1 copy.jpg", alt: "portrait" },
-    { cat: "family", src: "/images/IMG_5125.jpg", alt: "family" },
-    { cat: "event", src: "/images/IMG_0505.jpg", alt: "event" },
-
-  ];
 
   const filteredPhotos =
     tab === "all" ? photos : photos.filter((p) => p.cat === tab);
@@ -785,6 +767,7 @@ async function submitReview() {
   <span>Гортайте вбік</span>
   <span className="scroll-arrow">→</span>
 </div>
+
 
         <section id="services">
           <h3 className="section-title">Послуги та ціни</h3>

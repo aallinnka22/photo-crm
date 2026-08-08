@@ -3232,25 +3232,25 @@ html:not(.light) .leave-review-card {
 }
 
 
-
 /* =========================================================
-   МОБІЛЬНЕ ПОРТФОЛІОЗ ЗЗ ВІЗУАЛЬНИМ СКРОЛЛОМ ТА ПІДКАЗКОЮ
+   МОБІЛЬНЕ ПОРТФОЛІО (ІДЕАЛЬНО ЗЦЕНТРОВАНЕ + ПІДКАЗКА)
    ========================================================= */
 
-/* Підказка зі стрілкою для десктопа прихована */
+/* Приховуємо підказку на десктопах */
 .scroll-hint {
   display: none;
 }
 
 @media (max-width: 720px) {
-  /* 1. Анімована підказка над фотографіями */
+  /* 1. Акуратна підказка зверху над галереєю */
   .scroll-hint {
     display: flex;
     align-items: center;
+    justify-content: flex-end;
     gap: 6px;
-    font-size: 13px;
+    font-size: 12px;
     color: var(--muted, #b2b7c3);
-    margin-bottom: 10px;
+    margin: 8px 0 12px 0;
     font-weight: 500;
   }
 
@@ -3259,55 +3259,44 @@ html:not(.light) .leave-review-card {
     animation: swipeRight 1.5s infinite ease-in-out;
   }
 
-  /* 2. Контейнер портфоліо та стилізований скроллбар */
+  /* 2. Контейнер галереї: 10% падінги з боків роблять фото 80% РІВНО ПО ЦЕНТРУ */
   .folio {
     display: flex !important;
     overflow-x: auto !important;
     scroll-snap-type: x mandatory;
     gap: 12px !important;
-    padding-bottom: 12px !important; /* Простір для скроллбара */
+    padding: 0 10% 12px 10% !important;
     -webkit-overflow-scrolling: touch;
+    scrollbar-width: none; /* Приховуємо стандартну смугу в Firefox */
   }
 
-  /* Видима та охайна смуга скролу */
+  /* Приховуємо стандартний скроллбар Chrome / Safari */
   .folio::-webkit-scrollbar {
-    display: block !important;
-    height: 4px !important;
+    display: none !important;
   }
 
-  .folio::-webkit-scrollbar-track {
-    background: rgba(255, 255, 255, 0.08);
-    border-radius: 999px;
-  }
-
-  .folio::-webkit-scrollbar-thumb {
-    background: var(--ring, rgba(143, 176, 255, 0.55));
-    border-radius: 999px;
-  }
-
-  /* 3. Фотографії: 76% ширини, щоб збоку визирав край наступного кадру */
+  /* 3. Картки фотографій з магнітом строго в центр */
   .folio .ph {
-    flex: 0 0 76% !important;
-    scroll-snap-align: start;
+    flex: 0 0 80% !important;
+    scroll-snap-align: center !important;
     aspect-ratio: 3 / 4;
-    border-radius: 16px !important;
+    border-radius: 18px !important;
+    overflow: hidden;
+  }
+
+  .folio .ph img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
   }
 }
 
-/* Анімація погойдалки для стрілочки */
+/* Анімація для стрілочки */
 @keyframes swipeRight {
   0%, 100% {
     transform: translateX(0);
   }
   50% {
-    transform: translateX(6px);
+    transform: translateX(5px);
   }
-}
-
-/* Оптимізація скроллбара для світлої теми */
-html.light .folio::-webkit-scrollbar-track {
-  background: rgba(0, 0, 0, 0.08);
-}
-html.light .folio::-webkit-scrollbar-thumb {
-  background: rgba(60, 110, 255, 0.45);
 }
