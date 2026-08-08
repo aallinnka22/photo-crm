@@ -15,7 +15,7 @@ export default function HomePage() {
   const [time, setTime] = useState("12:30");
   const [name, setName] = useState("");
   const [contact, setContact] = useState("");
-  const [pkg, setPkg] = useState("Індивідуальна 1 год — 600 грн");
+  const [pkg, setPkg] = useState("Індивідуальна 1 год — 1000 грн");
   const [bookMsg, setBookMsg] = useState("");
   const [bookLoading, setBookLoading] = useState(false);
 
@@ -787,7 +787,7 @@ async function submitReview() {
             <div className="card">
               <h4>Індивідуальна зйомка – 1 година</h4>
               <div className="price">
-                <span className="num">750</span>
+                <span className="num">1000</span>
                 <span className="u">грн</span>
               </div>
               <p className="muted">
@@ -798,7 +798,7 @@ async function submitReview() {
                 className="btn"
                 type="button"
                 onClick={() => {
-                  setPkg("Індивідуальна 1 год — 750 грн");
+                  setPkg("Індивідуальна 1 год — 1000 грн");
                   scrollToId("booking");
                 }}
               >
@@ -809,7 +809,7 @@ async function submitReview() {
             <div className="card">
               <h4>Індивідуальна зйомка – 30 хв</h4>
               <div className="price">
-                <span className="num">500</span>
+                <span className="num">600</span>
                 <span className="u">грн</span>
               </div>
               <p className="muted">Швидка портретна сесія. 20 фото у ретуші.</p>
@@ -817,7 +817,7 @@ async function submitReview() {
                 className="btn"
                 type="button"
                 onClick={() => {
-                  setPkg("Індивідуальна 30 хв — 500 грн");
+                  setPkg("Індивідуальна 30 хв — 600 грн");
                   scrollToId("booking");
                 }}
               >
@@ -828,15 +828,15 @@ async function submitReview() {
             <div className="card">
               <h4>Сімейна зйомка - 1 година</h4>
               <div className="price">
-                <span className="num">850</span>
+                <span className="num">1100</span>
                 <span className="u">грн</span>
               </div>
-              <p className="muted">До 4 осіб. 50 фото у ретуші.</p>
+              <p className="muted">До 3 осіб. 50 фото у ретуші. За кожну додаткову людину +50грн</p>
               <button
                 className="btn"
                 type="button"
                 onClick={() => {
-                  setPkg("Сімейна 1 год — 850 грн");
+                  setPkg("Сімейна 1 год — 1100 грн");
                   scrollToId("booking");
                 }}
               >
@@ -847,7 +847,7 @@ async function submitReview() {
             <div className="card">
               <h4>Вінчання / Хрестини</h4>
               <div className="price">
-                <span className="num">900</span>
+                <span className="num">1200</span>
                 <span className="u">грн</span>
               </div>
               <p className="muted">Репортажна зйомка обрядів. </p>
@@ -855,7 +855,7 @@ async function submitReview() {
                 className="btn"
                 type="button"
                 onClick={() => {
-                  setPkg("Вінчання/Хрестини — 900 грн");
+                  setPkg("Вінчання/Хрестини — 1200 грн");
                   scrollToId("booking");
                 }}
               >
@@ -866,7 +866,7 @@ async function submitReview() {
             <div className="card">
               <h4>Весільна зйомка (розпис + вулична)</h4>
               <div className="price">
-                <span className="num">1000</span>
+                <span className="num">1500</span>
                 <span className="u">грн</span>
               </div>
               <p className="muted">
@@ -876,7 +876,7 @@ async function submitReview() {
                 className="btn"
                 type="button"
                 onClick={() => {
-                  setPkg("Весільна (1,5 год) — 1000 грн");
+                  setPkg("Весільна (1,5 год) — 1500 грн");
                   scrollToId("booking");
                 }}
               >
@@ -887,7 +887,7 @@ async function submitReview() {
             <div className="card">
               <h4>Професійна ретуш</h4>
               <div className="price">
-                <span className="num">50</span>
+                <span className="num">100</span>
                 <span className="u">грн</span>
               </div>
               <p className="muted">1 фото в професійній ретуші.</p>
@@ -995,11 +995,11 @@ async function submitReview() {
                 value={pkg}
                 onChange={(e) => setPkg(e.target.value)}
               >
-                <option>Індивідуальна 1 год — 750 грн</option>
-                <option>Індивідуальна 30 хв — 500 грн</option>
-                <option>Сімейна 1 год — 850 грн</option>
-                <option>Вінчання/Хрестини — 900 грн</option>
-                <option>Весільна (1,5 год) — 1000 грн</option>
+                <option>Індивідуальна 1 год — 1000 грн</option>
+                <option>Індивідуальна 30 хв — 600 грн</option>
+                <option>Сімейна 1 год — 1100 грн</option>
+                <option>Вінчання/Хрестини — 1200 грн</option>
+                <option>Весільна (1,5 год) — 1500 грн</option>
               </select>
 
               <button

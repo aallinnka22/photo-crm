@@ -3097,3 +3097,25 @@ input[type="date"]::-webkit-datetime-edit {
     padding: 9px 4px !important;
   }
 }
+
+
+/* Портфоліо у 2 колонки для мобільних екранів */
+@media (max-width: 720px) {
+  .folio {
+    display: grid !important;
+    grid-template-columns: repeat(2, 1fr) !important; /* 2 колонки рівної ширини */
+    gap: 8px !important; /* Компактний відступ між фото */
+  }
+
+  .folio .ph {
+    aspect-ratio: 3 / 4; /* Зберігаємо гарні пропорції вертикальних фото */
+    border-radius: 14px !important; /* Охайне заокруглення кутів */
+  }
+}
+
+/* Перекриваємо правило 420px, щоб сітка НЕ згорталася в 1 колонку */
+@media (max-width: 420px) {
+  .folio {
+    grid-template-columns: repeat(2, 1fr) !important;
+  }
+}
